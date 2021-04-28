@@ -12,7 +12,8 @@
     "maze",
     "solve",
     "puzzle",
-    "escape"
+    "escape",
+    "adventure"
   ],
   "scripts": {
     "start": "webpack-dev-server --mode development --output-public-path \"\"",
