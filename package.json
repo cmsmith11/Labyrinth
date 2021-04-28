@@ -11,7 +11,8 @@
     "COS 426",
     "maze",
     "solve",
-    "puzzle"
+    "puzzle",
+    "escape"
   ],
   "scripts": {
     "start": "webpack-dev-server --mode development --output-public-path \"\"",
