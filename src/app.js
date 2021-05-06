@@ -8,7 +8,8 @@
  */
 import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
 //import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls.js';
+//import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls.js';
+import { LabyrinthControls } from 'objects';
 import { Clock } from 'three'; // cms11 edit
 import { SeedScene } from 'scenes';
 
@@ -74,41 +75,46 @@ document.body.appendChild(canvas);
 // 	};
 // }
 
-var LabyrinthControls = function() {
-	FirstPersonControls.apply(this, arguments);
-};
-function MyOnKeyDown(event) {
-	event.preventDefault();
-	console.log('...hello?');
-	switch ( event.keyCode ) {
-		case 38: /*up*/
-		case 87: /*W*/ this.moveForward = false; break;
+// var LabyrinthControls = function() {
+// 	FirstPersonControls.apply(this, arguments);
+// };
+// function MyOnKeyDown(event) {
+// 	event.preventDefault();
+// 	console.log('...hello?');
+// 	switch ( event.keyCode ) {
+// 		case 38: /*up*/
+// 		case 87: /*W*/ this.moveForward = false; break;
 
-		case 37: /*left*/
-		case 65: /*A*/ this.moveLeft = true; break;
+// 		case 37: /*left*/
+// 		case 65: /*A*/ this.moveLeft = true; break;
 
-		case 40: /*down*/
-		case 83: /*S*/ this.moveBackward = true; break;
+// 		case 40: /*down*/
+// 		case 83: /*S*/ this.moveBackward = true; break;
 
-		case 39: /*right*/
-		case 68: /*D*/ this.moveRight = true; break;
+// 		case 39: /*right*/
+// 		case 68: /*D*/ this.moveRight = true; break;
 
-		case 82: /*R*/ this.moveUp = true; break;
-		case 70: /*F*/ this.moveDown = true; break;
-	}
-};
-LabyrinthControls.prototype = new FirstPersonControls(camera, canvas);
-LabyrinthControls.prototype.constructor = FirstPersonControls;
-//console.log(LabyrinthControls.prototype);
-//LabyrinthControls.prototype.addEventListener( 'keydown', function(){console.log('hello??');}, false );
+// 		case 82: /*R*/ this.moveUp = true; break;
+// 		case 70: /*F*/ this.moveDown = true; break;
+// 	}
+// };
+// LabyrinthControls.prototype = new FirstPersonControls(camera, canvas);
+// LabyrinthControls.prototype.constructor = FirstPersonControls;
+// //console.log(LabyrinthControls.prototype);
+// //LabyrinthControls.prototype.addEventListener( 'keydown', function(){console.log('hello??');}, false );
 
+// const controls = new LabyrinthControls(camera, canvas);
+// controls.movementSpeed = 5;
+// controls.lookSpeed = 0.2;
+// //controls.domElement.removeEventListener( 'keydown', null, false );
+// //controls.dispose();
+// console.log(controls.domElement);
+// window.addEventListener( 'keydown', MyOnKeyDown, false );
+
+// Set up controls - cms11 edit
 const controls = new LabyrinthControls(camera, canvas);
 controls.movementSpeed = 5;
 controls.lookSpeed = 0.2;
-//controls.domElement.removeEventListener( 'keydown', null, false );
-//controls.dispose();
-console.log(controls.domElement);
-window.addEventListener( 'keydown', MyOnKeyDown, false );
 
 // required for controls - cms11 edit
 const clock = new Clock();
