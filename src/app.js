@@ -16,6 +16,8 @@ import { LabyrinthScene } from 'scenes';
 
 // Initialize core ThreeJS components
 //const scene = new SeedScene();
+
+// Initialize core ThreeJS components
 const scene = new LabyrinthScene();
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
