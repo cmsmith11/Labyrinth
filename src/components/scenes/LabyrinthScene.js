@@ -1,9 +1,9 @@
 import * as Dat from 'dat.gui';
-import { Scene, Color} from 'three';
-import { Flower, Land } from 'objects';
+import { Scene, Color, Box3, Vector3, Box3Helper  } from 'three';
+import { Maze } from 'objects';
 import { BasicLights } from 'lights';
 
-class SeedScene extends Scene {
+class LabyrinthScene extends Scene {
     constructor() {
         // Call parent Scene() constructor
         super();
@@ -19,11 +19,9 @@ class SeedScene extends Scene {
         this.background = new Color(0x7ec0ee);
 
         // Add meshes to scene
-        const land = new Land();
-        const flower = new Flower(this);
         const lights = new BasicLights();
-        this.add(land, flower, lights);
-        this.add(land, flower, lights);
+        const maze = new Maze(this);
+        this.add(maze, lights);
 
         // Populate GUI
         this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
@@ -34,9 +32,7 @@ class SeedScene extends Scene {
     }
 
     update(timeStamp) {
-        const { rotationSpeed, updateList } = this.state;
-        this.rotation.y = (rotationSpeed * timeStamp) / 10000;
-
+        const { updateList } = this.state;
         // Call update for each object in the updateList
         for (const obj of updateList) {
             obj.update(timeStamp);
@@ -44,4 +40,4 @@ class SeedScene extends Scene {
     }
 }
 
-export default SeedScene;
+export default LabyrinthScene;
