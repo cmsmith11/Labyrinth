@@ -11,10 +11,12 @@ import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
 //import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls.js';
 import { LabyrinthControls } from 'objects';
 import { Clock } from 'three'; // cms11 edit
-import { SeedScene } from 'scenes';
+//import { SeedScene } from 'scenes';
+import { LabyrinthScene } from 'scenes';
 
 // Initialize core ThreeJS components
-const scene = new SeedScene();
+//const scene = new SeedScene();
+const scene = new LabyrinthScene();
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
