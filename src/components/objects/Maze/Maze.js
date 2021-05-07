@@ -1,4 +1,4 @@
-import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh } from 'three';
+import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh, SubdivisionModifier } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
@@ -155,19 +155,31 @@ class Maze extends Group {
         return toExclude;
     }
 
+    addNoise(geometry) {
+        const positions = geometry.attributes.position.array;
+        const num_points = positions.length() / 3;
+        let index = 0;
+        for (let i = 0; i < num_points; i++) {
+            positions[index ++] = x;
+            
+        }
+
+    }
+
     addWall(pos, normal, gridScale){
         let geometry = undefined;
+        const segments = 10;
         if (normal.x == 1) {
-            geometry = new BoxGeometry( gridScale/10, gridScale, gridScale);
+            geometry = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
         } else if (normal.y == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale/10, gridScale);
+            geometry = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale, gridScale/10);
+            geometry = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
         }
-        const material = new MeshNormalMaterial({ flatShading: true } );
+        const material = new MeshNormalMaterial({ flatShading: true, wireframe: true } );
         const cube = new Mesh( geometry, material );
         cube.position.add(pos);
-        this.add(cube)
+        this.add(cube);
     }
 
     update(timeStamp) {
