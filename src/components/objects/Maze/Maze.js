@@ -163,15 +163,21 @@ class Maze extends Group {
         return toExclude;
     }
 
-    addNoise(geometry) {
+    addNoise(geometry, scale) {
         const positions = geometry.attributes.position.array;
-        const num_points = positions.length() / 3;
+        const num_points = positions.length / 3;
         let index = 0;
+        console.log(num_points)
         for (let i = 0; i < num_points; i++) {
-            positions[index ++] = x;
-            
+            console.log("DOES STUFF")
+            let rx = (Math.random() - 0.5) * scale / 10;
+            let ry = 0;
+            let rz = (Math.random() - 0.5) * scale / 10;
+            positions[index ++] += rx;
+            positions[index ++] += ry;
+            positions[index ++] += rz;
         }
-
+        return geometry;
     }
 
     addWall(pos, normal, gridScale){
@@ -184,7 +190,8 @@ class Maze extends Group {
         } else if (normal.z == 1) {
             geometry = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
         }
-        const material = new MeshNormalMaterial({ flatShading: true, wireframe: true } );
+        geometry = this.addNoise(geometry, gridScale);
+        const material = new MeshNormalMaterial({ flatShading: true} );
         const cube = new Mesh( geometry, material );
         cube.position.add(pos);
         this.add(cube);
