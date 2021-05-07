@@ -10,7 +10,7 @@ import {
 	MathUtils,
 	Spherical,
 	Vector3
-} from "../../../../node_modules/three/build/three.module.js";
+} from "../../../node_modules/three/build/three.module.js";
 
 var LabyrinthControls = function ( object, domElement ) {
 
@@ -54,6 +54,7 @@ var LabyrinthControls = function ( object, domElement ) {
 	this.mouseX = 0;
 	this.mouseY = 0;
 
+	this.moveable = true;
 	this.moveForward = false;
 	this.moveBackward = false;
 	this.moveLeft = false;
@@ -145,6 +146,12 @@ var LabyrinthControls = function ( object, domElement ) {
 
 	this.onMouseMove = function ( event ) {
 
+		if (!this.moveable) {
+			this.mouseX = 0;
+			this.mouseY = 0;
+			return;
+		}
+
 		if ( this.domElement === document ) {
 
 			this.mouseX = event.pageX - this.viewHalfX;
@@ -156,7 +163,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
 
 			// circle of radius stillRadius where motion is set to zero
-			let stillRadius = 100;
+			let stillRadius = 10;
 			if (this.mouseX * this.mouseX + this.mouseY * this.mouseY < stillRadius*stillRadius) {
 				this.mouseX = 0;
 				this.mouseY = 0;
@@ -171,23 +178,20 @@ var LabyrinthControls = function ( object, domElement ) {
 
 		switch ( event.keyCode ) {
 
-			case 38: /*up*/
 			case 87: /*W*/ this.moveForward = true; break;
-
-			case 37: /*left*/
 			case 65: /*A*/ this.moveLeft = true; break;
-
-			case 40: /*down*/
 			case 83: /*S*/ this.moveBackward = true; break;
-
-			case 39: /*right*/
 			case 68: /*D*/ this.moveRight = true; break;
 
-			// case 82: /*R*/ this.moveUp = true; break;
-			// case 70: /*F*/ this.moveDown = true; break;
-
-			case 32: /*Space*/ this.moveUp = true; break;
+			case 82: /*Space*/ this.moveUp = true; break;
 			case 16: /*Shift*/ this.moveDown = true; break;
+
+			case 38: /*up*/ this.mouseY = this.mouseY > -200 ? -200 : this.mouseY -= 40; break;
+			case 37: /*left*/ this.mouseX = this.mouseX > -200 ? -200 : this.mouseX -= 40;; break;
+			case 40: /*down*/ this.mouseY = this.mouseY < 200 ? 200 : this.mouseY += 40; break;
+			case 39: /*right*/ this.mouseX = this.mouseX < 200 ? 200 : this.mouseX += 40; break;
+
+			case 32: /*Space*/ this.moveable = !this.moveable; this.mouseX = 0; this.mouseY = 0; break;
 
 		}
 
@@ -197,26 +201,39 @@ var LabyrinthControls = function ( object, domElement ) {
 
 		switch ( event.keyCode ) {
 
-			case 38: /*up*/
 			case 87: /*W*/ this.moveForward = false; break;
-
-			case 37: /*left*/
 			case 65: /*A*/ this.moveLeft = false; break;
-
-			case 40: /*down*/
 			case 83: /*S*/ this.moveBackward = false; break;
-
-			case 39: /*right*/
 			case 68: /*D*/ this.moveRight = false; break;
 
-			// case 82: /*R*/ this.moveUp = false; break;
-			// case 70: /*F*/ this.moveDown = false; break;
-
-			case 32: /*Space*/ this.moveUp = false; break;
+			case 82: /*R*/ this.moveUp = false; break;
 			case 16: /*Shift*/ this.moveDown = false; break;
+
+			case 38: /*up*/ this.mouseY = 0; break;
+			case 37: /*left*/ this.mouseX = 0; break;
+			case 40: /*down*/ this.mouseY = 0; break;
+			case 39: /*right*/ this.mouseX = 0; break;
+
+			//case 32: /*Space*/ this.moveable = false; break;
 
 		}
 
+	};
+var dbg = 0;
+	this.collisionCheck = function (obj) {
+		//console.log('collisionCheck with:', obj);
+		return;
+		// if (dbg > 2)
+		// 	return;
+		// dbg++;
+		for ( const child of obj.children ) {
+			//console.log('pos', child.position);
+			//console.log('mypos', this.object.position);
+			//console.log(child.position.distanceTo(this.object.position));
+			if (child.position.distanceTo(this.object.position) < 20.0) {
+				//console.log('collision!', child);
+			}
+		}
 	};
 
 	this.lookAt = function ( x, y, z ) {
@@ -268,7 +285,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 			if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-			if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
+			if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
 			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
 			var actualLookSpeed = delta * this.lookSpeed;
@@ -371,5 +388,4 @@ var LabyrinthControls = function ( object, domElement ) {
 
 };
 
-//export { LabyrinthControls };
 export default LabyrinthControls;
