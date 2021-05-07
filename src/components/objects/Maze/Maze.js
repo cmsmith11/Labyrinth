@@ -43,7 +43,8 @@ class Maze extends Group {
                     continue;
                     }
                 }
-                const pos = new Vector3(x, y, 0);
+                //const pos = new Vector3(x, y, 0);
+                const pos = new Vector3(x, 0, y);
                 const normal = new Vector3(1, 0, 0);
                 this.addWall(pos, normal, gridScale);
             }
@@ -65,8 +66,10 @@ class Maze extends Group {
                     continue;
                     }
                 }
-                const pos = new Vector3(x, y, 0);
-                const normal = new Vector3(0, 1, 0);
+                //const pos = new Vector3(x, y, 0);
+                const pos = new Vector3(x, 0, y);
+                //const normal = new Vector3(0, 1, 0);
+                const normal = new Vector3(0, 0, 1);
                 this.addWall(pos, normal, gridScale);
             }
         }
@@ -75,20 +78,25 @@ class Maze extends Group {
             let y = (j - 0.5)*gridScale;
             const normal = new Vector3(1, 0, 0);
             let x = -1 * gridScale;
-            const pos = new Vector3(x, y, 0);
+            //const pos = new Vector3(x, y, 0);
+            const pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
             x = gridScale * (gridSize - 1);
-            pos = new Vector3(x, y, 0);
+            //pos = new Vector3(x, y, 0);
+            pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
         }
         for (let i = 0; i < gridSize; i ++) {
             let x = (i - 0.5)*gridScale;
-            const normal = new Vector3(0, 1, 0);
+            //const normal = new Vector3(0, 1, 0);
+            const normal = new Vector3(0, 0, 1);
             let y = -1 * gridScale;
-            const pos = new Vector3(x, y, 0);
+            //const pos = new Vector3(x, y, 0);
+            const pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
             y = gridScale * (gridSize - 1);
-            pos = new Vector3(x, y, 0);
+            //pos = new Vector3(x, y, 0);
+            pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
         }
         

@@ -183,7 +183,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			case 83: /*S*/ this.moveBackward = true; break;
 			case 68: /*D*/ this.moveRight = true; break;
 
-			//case 32: /*Space*/ this.moveUp = true; break;
+			case 82: /*Space*/ this.moveUp = true; break;
 			case 16: /*Shift*/ this.moveDown = true; break;
 
 			case 38: /*up*/ this.mouseY = this.mouseY > -200 ? -200 : this.mouseY -= 40; break;
@@ -206,7 +206,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			case 83: /*S*/ this.moveBackward = false; break;
 			case 68: /*D*/ this.moveRight = false; break;
 
-			//case 32: /*Space*/ this.moveUp = false; break;
+			case 82: /*R*/ this.moveUp = false; break;
 			case 16: /*Shift*/ this.moveDown = false; break;
 
 			case 38: /*up*/ this.mouseY = 0; break;
@@ -219,9 +219,21 @@ var LabyrinthControls = function ( object, domElement ) {
 		}
 
 	};
-
+var dbg = 0;
 	this.collisionCheck = function (obj) {
-		console.log('collisionCheck with:', obj);
+		//console.log('collisionCheck with:', obj);
+		return;
+		// if (dbg > 2)
+		// 	return;
+		// dbg++;
+		for ( const child of obj.children ) {
+			//console.log('pos', child.position);
+			//console.log('mypos', this.object.position);
+			//console.log(child.position.distanceTo(this.object.position));
+			if (child.position.distanceTo(this.object.position) < 20.0) {
+				//console.log('collision!', child);
+			}
+		}
 	};
 
 	this.lookAt = function ( x, y, z ) {
@@ -273,7 +285,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 			if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-			if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
+			if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
 			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
 			var actualLookSpeed = delta * this.lookSpeed;
