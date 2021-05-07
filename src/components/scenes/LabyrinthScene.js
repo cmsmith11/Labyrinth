@@ -16,7 +16,7 @@ class LabyrinthScene extends Scene {
         };
 
         // Set background to a nice color
-        this.background = new Color(0x7ec0ee);
+        this.background = new Color(0x000000);
 
         // Add meshes to scene
         // const land = new Land();
