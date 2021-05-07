@@ -21,8 +21,10 @@ class Maze extends Group {
     }
 
     buildRandomMaze(){
-        const gridSize = 10
-        const gridScale = 10.0
+        const gridSize = 10.0
+        const gridScale = 5.0
+
+        // Inner Walls
         const toExclude = this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
         let ex = 0;
         for(let i = 0; i < gridSize - 1; i ++) {
@@ -43,7 +45,7 @@ class Maze extends Group {
                 }
                 const pos = new Vector3(x, y, 0);
                 const normal = new Vector3(1, 0, 0);
-                this.addWall(pos, normal, gridSize);
+                this.addWall(pos, normal, gridScale);
             }
         }
         ex = 0;
@@ -65,10 +67,30 @@ class Maze extends Group {
                 }
                 const pos = new Vector3(x, y, 0);
                 const normal = new Vector3(0, 1, 0);
-                this.addWall(pos, normal, gridSize);
+                this.addWall(pos, normal, gridScale);
             }
         }
-        
+        // Outer Walls
+        for (let j = 0; j < gridSize; j ++) {
+            let y = (j - 0.5)*gridScale;
+            const normal = new Vector3(1, 0, 0);
+            let x = -1 * gridScale;
+            const pos = new Vector3(x, y, 0);
+            this.addWall(pos, normal, gridScale);
+            x = gridScale * (gridSize - 1);
+            pos = new Vector3(x, y, 0);
+            this.addWall(pos, normal, gridScale);
+        }
+        for (let i = 0; i < gridSize; i ++) {
+            let x = (i - 0.5)*gridScale;
+            const normal = new Vector3(0, 1, 0);
+            let y = -1 * gridScale;
+            const pos = new Vector3(x, y, 0);
+            this.addWall(pos, normal, gridScale);
+            y = gridScale * (gridSize - 1);
+            pos = new Vector3(x, y, 0);
+            this.addWall(pos, normal, gridScale);
+        }
         
     }
 
