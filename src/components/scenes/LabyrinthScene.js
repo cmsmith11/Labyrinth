@@ -1,11 +1,10 @@
 import * as Dat from 'dat.gui';
-//import { Flower, Land } from 'objects';
-import { Scene, Color, Box3, Vector3, Box3Helper, BoxGeometry, MeshBasicMaterial, Mesh  } from 'three';
+import { Scene, Color, Box3, Vector3, Box3Helper } from 'three';
 import { Maze } from 'objects';
 import { BasicLights } from 'lights';
 
 class LabyrinthScene extends Scene {
-    constructor() {
+    constructor(controls) {
         // Call parent Scene() constructor
         super();
 
@@ -25,16 +24,14 @@ class LabyrinthScene extends Scene {
         // const lights = new BasicLights();
         // this.add(land, flower, lights);
 
-        // const geometry = new BoxGeometry( 1, 1, 1 );
-        // const material = new MeshBasicMaterial( {color: 0x00ff00} );
-        // const cube = new Mesh( geometry, material );
-        // this.add( cube );
         const lights = new BasicLights();
         const maze = new Maze(this);
         this.add(maze, lights);
 
+        this.controls = controls;
+
         // Populate GUI
-        this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
+        //this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
     }
 
     addToUpdateList(object) {
@@ -48,6 +45,7 @@ class LabyrinthScene extends Scene {
         // Call update for each object in the updateList
         for (const obj of updateList) {
             obj.update(timeStamp);
+            this.controls.collisionCheck(obj);
         }
     }
 }
