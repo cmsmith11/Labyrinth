@@ -1,6 +1,7 @@
-import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh, SubdivisionModifier } from 'three';
+import { Group, BoxGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
 
 class Maze extends Group {
     constructor(parent) {
@@ -21,11 +22,11 @@ class Maze extends Group {
     }
 
     buildRandomMaze(){
-        const gridSize = 10.0
+        const gridSize = 5.0
         const gridScale = 5.0
 
         // Inner Walls
-        const toExclude = this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
+        const toExclude = []; //this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
         let ex = 0;
         for(let i = 0; i < gridSize - 1; i ++) {
             let x = i*gridScale;
@@ -164,12 +165,11 @@ class Maze extends Group {
     }
 
     addNoise(geometry, scale) {
-        const positions = geometry.attributes.position.array;
+        let newGeo = geometry.clone();
+        const positions = newGeo.attributes.position.array;
         const num_points = positions.length / 3;
         let index = 0;
-        console.log(num_points)
         for (let i = 0; i < num_points; i++) {
-            console.log("DOES STUFF")
             let rx = (Math.random() - 0.5) * scale / 10;
             let ry = 0;
             let rz = (Math.random() - 0.5) * scale / 10;
@@ -177,24 +177,39 @@ class Maze extends Group {
             positions[index ++] += ry;
             positions[index ++] += rz;
         }
-        return geometry;
+        return newGeo;
     }
 
     addWall(pos, normal, gridScale){
-        let geometry = undefined;
+        let wallGeo = undefined;
+        let mirrorGeo = new PlaneGeometry(gridScale, gridScale);;
         const segments = 10;
         if (normal.x == 1) {
-            geometry = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
+            mirrorGeo.rotateY(Math.PI / 2.0)
         } else if (normal.y == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
+            wallGeo = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
         }
-        geometry = this.addNoise(geometry, gridScale);
-        const material = new MeshNormalMaterial({ flatShading: true} );
-        const cube = new Mesh( geometry, material );
-        cube.position.add(pos);
-        this.add(cube);
+        wallGeo = this.addNoise(wallGeo, gridScale);
+        const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );
+        if (Math.random() < 0.1){
+            let mirrorWall = new Reflector( mirrorGeo, {
+                clipBias: 0.003,
+                textureWidth: window.innerWidth * window.devicePixelRatio,
+                textureHeight: window.innerHeight * window.devicePixelRatio,
+                color: 0x777777
+            });
+            //let mirrorWall = new Mesh(mirrorGeo, material);
+            mirrorWall.position.add(pos);
+            this.add(mirrorWall); 
+        } else {
+            
+            const cube = new Mesh( wallGeo, material );
+            cube.position.add(pos);
+            this.add(cube);
+        }
     }
 
     update(timeStamp) {
