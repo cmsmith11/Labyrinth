@@ -217,7 +217,7 @@ class Maze extends Group {
     }
 
     addFloor(y, gridSize, gridScale, smooth) {
-        if (smooth) {
+        if (false) {
             let mirrorGeo = new PlaneGeometry(gridSize*gridScale, gridSize* gridScale );
             mirrorGeo.rotateX(- Math.PI / 2.0);
             let mirrorWall = new Reflector( mirrorGeo, {
