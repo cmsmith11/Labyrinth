@@ -13,7 +13,6 @@ class Maze extends Group {
         };
         this.name = 'maze'
 
-        
         this.buildRandomMaze();
 
         // Add self to parent's update list
@@ -174,8 +173,9 @@ class Maze extends Group {
         }
         const material = new MeshNormalMaterial({ flatShading: true } );
         const cube = new Mesh( geometry, material );
+        cube.normal = normal;
         cube.position.add(pos);
-        this.add(cube)
+        this.add(cube);
     }
 
     update(timeStamp) {

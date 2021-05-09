@@ -12,6 +12,8 @@ import {
 	Vector3
 } from "../../../node_modules/three/build/three.module.js";
 
+var EPS = 0.01;
+
 var LabyrinthControls = function ( object, domElement ) {
 
 	if ( domElement === undefined ) {
@@ -54,7 +56,7 @@ var LabyrinthControls = function ( object, domElement ) {
 	this.mouseX = 0;
 	this.mouseY = 0;
 
-	this.moveable = true;
+	this.moveable = false;
 	this.moveForward = false;
 	this.moveBackward = false;
 	this.moveLeft = false;
@@ -62,6 +64,11 @@ var LabyrinthControls = function ( object, domElement ) {
 
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
+
+	this.scene = undefined;
+	this.previous = this.object.position;
+	this.didCollide = false;
+	this.collideResultPosition = undefined;
 
 	// private variables
 
@@ -183,15 +190,15 @@ var LabyrinthControls = function ( object, domElement ) {
 			case 83: /*S*/ this.moveBackward = true; break;
 			case 68: /*D*/ this.moveRight = true; break;
 
-			case 82: /*Space*/ this.moveUp = true; break;
+			case 32: /*Space*/ this.moveUp = true; break;
 			case 16: /*Shift*/ this.moveDown = true; break;
 
-			case 38: /*up*/ this.mouseY = this.mouseY > -200 ? -200 : this.mouseY -= 40; break;
-			case 37: /*left*/ this.mouseX = this.mouseX > -200 ? -200 : this.mouseX -= 40;; break;
-			case 40: /*down*/ this.mouseY = this.mouseY < 200 ? 200 : this.mouseY += 40; break;
-			case 39: /*right*/ this.mouseX = this.mouseX < 200 ? 200 : this.mouseX += 40; break;
+			case 38: /*up*/ this.mouseY = -400; break;
+			case 37: /*left*/ this.mouseX = -400; break;
+			case 40: /*down*/ this.mouseY = 400; break;
+			case 39: /*right*/ this.mouseX = 400; break;
 
-			case 32: /*Space*/ this.moveable = !this.moveable; this.mouseX = 0; this.mouseY = 0; break;
+			//case 32: /*Space*/ this.moveable = !this.moveable; this.mouseX = 0; this.mouseY = 0; break;
 
 		}
 
@@ -206,7 +213,7 @@ var LabyrinthControls = function ( object, domElement ) {
 			case 83: /*S*/ this.moveBackward = false; break;
 			case 68: /*D*/ this.moveRight = false; break;
 
-			case 82: /*R*/ this.moveUp = false; break;
+			case 32: /*Space*/ this.moveUp = false; break;
 			case 16: /*Shift*/ this.moveDown = false; break;
 
 			case 38: /*up*/ this.mouseY = 0; break;
@@ -214,26 +221,91 @@ var LabyrinthControls = function ( object, domElement ) {
 			case 40: /*down*/ this.mouseY = 0; break;
 			case 39: /*right*/ this.mouseX = 0; break;
 
-			//case 32: /*Space*/ this.moveable = false; break;
-
 		}
 
 	};
-var dbg = 0;
-	this.collisionCheck = function (obj) {
-		//console.log('collisionCheck with:', obj);
-		return;
-		// if (dbg > 2)
-		// 	return;
-		// dbg++;
-		for ( const child of obj.children ) {
-			//console.log('pos', child.position);
-			//console.log('mypos', this.object.position);
-			//console.log(child.position.distanceTo(this.object.position));
-			if (child.position.distanceTo(this.object.position) < 20.0) {
-				//console.log('collision!', child);
+
+	this.collisionCheck = function () {
+		const { updateList } = this.scene.state;
+		let maze;
+		for (const obj of updateList) {
+			if (obj.name == 'maze') {
+				maze = obj;
+				break;
 			}
 		}
+
+		let didCollide = false;
+		for ( const wall of maze.children ) {
+			if (wall.normal == undefined)
+				continue;
+
+			let halfWallThickness = 1.0;
+			let gridScale = 5 + EPS;
+
+			let prevVecMid = this.previous.clone().sub(wall.position);
+			let prevDotMid = wall.normal.dot(prevVecMid);
+			let wallSurface = wall.position.clone();
+
+			if (wall.normal.equals(new Vector3(1, 0, 0))) {
+				wallSurface.x += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
+
+				let posVec = this.object.position.clone().sub(wallSurface);
+				let posDot = wall.normal.dot(posVec);
+				let prevVec = this.previous.clone().sub(wallSurface);
+				let prevDot = wall.normal.dot(prevVec);
+
+				//if (posDot * prevDot <= 0 && this.object.position.z > wall.position.z - gridScale/2 && this.object.position.z < wall.position.z + gridScale/2) {
+				if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.z > wall.position.z - gridScale/2 && this.previous.z < wall.position.z + gridScale/2) {
+					// collision detected
+					didCollide = true;
+					this.collideResultPosition = this.object.position.clone();
+					this.collideResultPosition.x = wallSurface.x - EPS * (posDot / Math.abs(posDot));
+					if (this.collideResultPosition.z < wall.position.z - gridScale/2 || this.collideResultPosition.z > wall.position.z + gridScale/2) {
+						console.log('oh no!');
+						//this.collideResultPosition = this.previous;
+					}
+					// if (this.collideResultPosition.z < wall.position.z - gridScale/2)
+					// 	this.collideResultPosition.z = wall.position.z - gridScale/2;
+					// if (this.collideResultPosition.z > wall.position.z + gridScale/2)
+					// 	this.collideResultPosition.z = wall.position.z + gridScale/2;
+				}
+			} else if (wall.normal.equals(new Vector3(0, 0, 1))) {
+				wallSurface.z += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
+
+				let posVec = this.object.position.clone().sub(wallSurface);
+				let posDot = wall.normal.dot(posVec);
+				let prevVec = this.previous.clone().sub(wallSurface);
+				let prevDot = wall.normal.dot(prevVec);
+
+				//if (posDot * prevDot <= 0 && this.object.position.x > wall.position.x - gridScale/2 && this.object.position.x < wall.position.x + gridScale/2) {
+				if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.x > wall.position.x - gridScale/2 && this.previous.x < wall.position.x + gridScale/2) {
+					// collision detected
+					didCollide = true;
+					this.collideResultPosition = this.object.position.clone();
+					this.collideResultPosition.z = wallSurface.z - EPS * (posDot / Math.abs(posDot));
+					if (this.collideResultPosition.x < wall.position.x - gridScale/2 || this.collideResultPosition.x > wall.position.x + gridScale/2) {
+						console.log('oh no!');
+						//this.collideResultPosition = this.previous;
+					}
+					// if (this.collideResultPosition.x < wall.position.x - gridScale/2)
+					// 	this.collideResultPosition.x = wall.position.x - gridScale/2;
+					// if (this.collideResultPosition.x > wall.position.x + gridScale/2)
+					// 	this.collideResultPosition.x = wall.position.x + gridScale/2;
+				}
+			}
+		}
+		// floor collision
+		if (this.object.position.y < 0) {
+			if (didCollide) {
+				this.collideResultPosition.y = 0;
+			} else {
+				didCollide = true;
+				this.collideResultPosition = this.object.position.clone();
+				this.collideResultPosition.y = 0;
+			}
+		}
+		return didCollide;
 	};
 
 	this.lookAt = function ( x, y, z ) {
@@ -279,6 +351,31 @@ var dbg = 0;
 
 			var actualMoveSpeed = delta * this.movementSpeed;
 
+			// // for collision
+			// if (!this.collisionCheck()) {
+			// 	this.previous = this.object.position.clone();
+			// 	if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
+			// 	if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+
+			// 	if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
+			// 	if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
+
+			// 	if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
+			// 	if ( this.moveDown ) this.object.translateY( - actualMoveSpeed * 5 );
+			// } else {
+			// 	//console.log('collided!');
+			// 	this.object.position.copy(this.collideResultPosition);
+			// }
+
+			// rotate to flat before translation
+			let ph = Math.PI / 2; // lat = 0
+			let th = MathUtils.degToRad(lon);
+			targetPosition.setFromSphericalCoords(1, ph, th).add(this.object.position);
+			this.object.lookAt(targetPosition);
+
+			// for collision
+			//let prevPrev = this.previous.clone();
+			this.previous = this.object.position.clone();
 			if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 			if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
 
@@ -286,7 +383,14 @@ var dbg = 0;
 			if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
 			if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
-			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
+			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed * 5 );
+
+			if (this.collisionCheck()) {
+				//console.log('collided!');
+				//this.object.position.copy(this.previous);
+				this.object.position.copy(this.collideResultPosition);
+				//this.previous = prevPrev;
+			}
 
 			var actualLookSpeed = delta * this.lookSpeed;
 
@@ -319,7 +423,7 @@ var dbg = 0;
 			}
 
 			var position = this.object.position;
-
+			
 			targetPosition.setFromSphericalCoords( 1, phi, theta ).add( position );
 
 			this.object.lookAt( targetPosition );

@@ -12,13 +12,15 @@ import { Clock } from 'three';
 import { LabyrinthScene } from 'scenes';
 
 // Initialize core ThreeJS components
-// const scene = new LabyrinthScene();
+const scene = new LabyrinthScene();
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
 // Set up camera
-camera.position.set(6, 3, -10);
-camera.lookAt(new Vector3(0, 0, 0));
+let x = Math.floor(Math.random() * 10) * 5 - 2.5;
+let z = Math.floor(Math.random() * 10) * 5 - 2.5;
+camera.position.set(x, 0, z);
+camera.lookAt(new Vector3(x, 0, z));
 
 // Set up renderer, canvas, and minor CSS adjustments
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -30,13 +32,12 @@ document.body.appendChild(canvas);
 
 // Set up controls
 const controls = new LabyrinthControls(camera, canvas);
+controls.scene = scene;
 controls.movementSpeed = 5;
 controls.lookSpeed = 0.4;
 
 // required for controls
 const clock = new Clock();
-
-const scene = new LabyrinthScene(controls);
 
 // Render loop
 const onAnimationFrameHandler = (timeStamp) => {
