@@ -2,7 +2,7 @@
  * @author jrknott
  */
 
-import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh, 
+import { Group, BoxGeometry, Vector3, Mesh, 
     DoubleSide, MeshPhongMaterial, TextureLoader} from 'three';
 
 class Maze extends Group {
@@ -11,7 +11,7 @@ class Maze extends Group {
         super();
         // Init state
         this.state = {
-            gui: parent.state.gui,            
+            gui: parent.state.gui,       
         };
         this.name = 'maze'
         // build the maze
@@ -263,7 +263,6 @@ class Maze extends Group {
     }
 
     update(timeStamp) {
-        // nothing to update
     }
 }
 
