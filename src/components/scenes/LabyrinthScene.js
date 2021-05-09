@@ -21,10 +21,12 @@ class LabyrinthScene extends Scene {
         // Add meshes to scene
         const lights = new BasicLights();
         const maze = new Maze(this);
+        // end goal
         let endGoal = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial({wireframe: true}));
-        let x = Math.floor(Math.random() * 10) * 5 - 2.5;
-        let z = Math.floor(Math.random() * 10) * 5 - 2.5;
+        let x = Math.floor(Math.random() * 5) * 5 - 2.5;
+        let z = Math.floor(Math.random() * 5) * 5 - 2.5;
         endGoal.position.add(new Vector3(x, 0, z));
+        //
 
         this.add(maze, lights, endGoal);
 

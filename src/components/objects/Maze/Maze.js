@@ -1,6 +1,7 @@
-import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh } from 'three';
+import { Group, BoxGeometry, BufferGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide, MeshPhongMaterial} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
 
 class Maze extends Group {
     constructor(parent) {
@@ -20,7 +21,7 @@ class Maze extends Group {
     }
 
     buildRandomMaze(){
-        const gridSize = 10.0
+        const gridSize = 5.0
         const gridScale = 5.0
 
         // Inner Walls
@@ -98,6 +99,8 @@ class Maze extends Group {
             pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
         }
+        this.addFloor(0, gridSize, gridScale, true);
+        //this.addFloor(1, gridSize, gridScale, false); 
         
     }
 
@@ -162,20 +165,89 @@ class Maze extends Group {
         return toExclude;
     }
 
-    addWall(pos, normal, gridScale){
-        let geometry = undefined;
-        if (normal.x == 1) {
-            geometry = new BoxGeometry( gridScale/10, gridScale, gridScale);
-        } else if (normal.y == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale/10, gridScale);
-        } else if (normal.z == 1) {
-            geometry = new BoxGeometry( gridScale, gridScale, gridScale/10);
+    addNoise(geometry, scale) {
+        //let newGeo = geometry.clone();
+        let newGeo = new BufferGeometry();
+        newGeo.fromGeometry(geometry);
+        const positions = newGeo.attributes.position.array;
+        const num_points = positions.length / 3;
+        let index = 0;
+        for (let i = 0; i < num_points; i++) {
+            let rx = (Math.random() - 0.5) * scale / 10;
+            let ry = (Math.random() - 0.5) * scale / 10;
+            let rz = (Math.random() - 0.5) * scale / 10;
+            positions[index ++] += rx;
+            positions[index ++] += ry;
+            positions[index ++] += rz;
         }
-        const material = new MeshNormalMaterial({ flatShading: true } );
-        const cube = new Mesh( geometry, material );
+        return newGeo;
+    }
+
+    addWall(pos, normal, gridScale){
+        let wallGeo = undefined;
+        let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
+        const segments = 10*gridScale;
+        if (normal.x == 1) {
+            wallGeo = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
+            mirrorGeo.rotateY(Math.PI / 2.0)
+        } else if (normal.y == 1) {
+            wallGeo = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
+        } else if (normal.z == 1) {
+            wallGeo = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
+        }
+// <<<<<<< HEAD
+//         const material = new MeshNormalMaterial({ flatShading: true } );
+//         const cube = new Mesh( geometry, material );
+//         cube.normal = normal;
+//         cube.position.add(pos);
+//         this.add(cube);
+// =======
+        wallGeo = this.addNoise(wallGeo, gridScale);
+        //const material = new MeshNormalMaterial({ flatShading:true, side: DoubleSide} );
+
+        const material = new MeshPhongMaterial({color: 0x49ef4});
+        // MAKE CUSTOM MATERIAL
+        //console.log(material)
+        const cube = new Mesh( wallGeo, material );
         cube.normal = normal;
         cube.position.add(pos);
         this.add(cube);
+        // if (Math.random < 0.1) {
+        //     let mirrorWall = new Reflector( mirrorGeo, {
+        //         clipBias: 0.003,
+        //         textureWidth: window.innerWidth * window.devicePixelRatio,
+        //         textureHeight: window.innerHeight * window.devicePixelRatio,
+        //         color: 0x777777
+        //     });
+        //     mirrorWall.position.add(pos);
+        //     this.add(mirrorWall); 
+        // }
+        
+    }
+
+    addFloor(y, gridSize, gridScale, smooth) {
+        if (smooth) {
+            let mirrorGeo = new PlaneGeometry(gridSize*gridScale, gridSize* gridScale );
+            mirrorGeo.rotateX(- Math.PI / 2.0);
+            let mirrorWall = new Reflector( mirrorGeo, {
+                clipBias: 0.003,
+                textureWidth: window.innerWidth * window.devicePixelRatio,
+                textureHeight: window.innerHeight * window.devicePixelRatio,
+                color: 0x777777
+            });
+            
+            mirrorWall.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale));
+            this.add(mirrorWall); 
+        } else {
+            let segments = 10*gridSize*gridScale;
+            let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
+            floorGeo = this.addNoise(floorGeo, gridScale)
+            const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
+            const floor = new Mesh(floorGeo, material);
+            floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
+            this.add(floor);
+        }
+//>>>>>>> d4c7ad481c3d7d59c1d0e0ac89f98ee7ceb497ae
     }
 
     update(timeStamp) {

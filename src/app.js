@@ -17,8 +17,8 @@ const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
 // Set up camera
-let x = Math.floor(Math.random() * 10) * 5 - 2.5;
-let z = Math.floor(Math.random() * 10) * 5 - 2.5;
+let x = Math.floor(Math.random() * 5) * 5 - 2.5;
+let z = Math.floor(Math.random() * 5) * 5 - 2.5;
 camera.position.set(x, 0, z);
 camera.lookAt(new Vector3(x, 0, z));
 
