@@ -3,7 +3,7 @@
  */
 
 import { Group, BoxGeometry, Vector3, Mesh, 
-    DoubleSide, MeshPhongMaterial, TextureLoader} from 'three';
+         MeshPhongMaterial, TextureLoader} from 'three';
 
 class Maze extends Group {
     constructor(parent, dimensions, scale) {
