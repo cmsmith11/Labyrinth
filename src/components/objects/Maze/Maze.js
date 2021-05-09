@@ -24,6 +24,24 @@ class Maze extends Group {
         const gridSize = 5.0
         const gridScale = 5.0
 
+        
+
+        for (let k = 0; k <= gridSize; k++) {  
+            if (k < gridSize) { //<gridSize after debug
+                this.addMazeLevel(k, gridSize, gridScale);
+            }
+            if (k == 0 || k == gridSize) {
+                this.addFloor(k, gridSize, gridScale, false);
+            }
+            else {
+                this.addFloor(k, gridSize, gridScale, true);
+            }
+        }
+        
+        
+    }
+
+    addMazeLevel(level, gridSize, gridScale){
         // Inner Walls
         const toExclude = this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
         let ex = 0;
@@ -44,7 +62,7 @@ class Maze extends Group {
                     }
                 }
                 //const pos = new Vector3(x, y, 0);
-                const pos = new Vector3(x, 0, y);
+                const pos = new Vector3(x, level*gridScale, y);
                 const normal = new Vector3(1, 0, 0);
                 this.addWall(pos, normal, gridScale);
             }
@@ -67,7 +85,7 @@ class Maze extends Group {
                     }
                 }
                 //const pos = new Vector3(x, y, 0);
-                const pos = new Vector3(x, 0, y);
+                const pos = new Vector3(x, level*gridScale, y);
                 //const normal = new Vector3(0, 1, 0);
                 const normal = new Vector3(0, 0, 1);
                 this.addWall(pos, normal, gridScale);
@@ -79,11 +97,11 @@ class Maze extends Group {
             const normal = new Vector3(1, 0, 0);
             let x = -1 * gridScale;
             //const pos = new Vector3(x, y, 0);
-            const pos = new Vector3(x, 0, y);
+            const pos = new Vector3(x, level*gridScale, y);
             this.addWall(pos, normal, gridScale);
             x = gridScale * (gridSize - 1);
             //pos = new Vector3(x, y, 0);
-            pos = new Vector3(x, 0, y);
+            pos = new Vector3(x, level*gridScale, y);
             this.addWall(pos, normal, gridScale);
         }
         for (let i = 0; i < gridSize; i ++) {
@@ -92,16 +110,13 @@ class Maze extends Group {
             const normal = new Vector3(0, 0, 1);
             let y = -1 * gridScale;
             //const pos = new Vector3(x, y, 0);
-            const pos = new Vector3(x, 0, y);
+            const pos = new Vector3(x, level*gridScale, y);
             this.addWall(pos, normal, gridScale);
             y = gridScale * (gridSize - 1);
             //pos = new Vector3(x, y, 0);
-            pos = new Vector3(x, 0, y);
+            pos = new Vector3(x, level*gridScale, y);
             this.addWall(pos, normal, gridScale);
         }
-        this.addFloor(0, gridSize, gridScale, true);
-        this.addFloor(1, gridSize, gridScale, false); 
-        
     }
 
     getNeighbors(i, j, rows, cols) {
@@ -198,11 +213,11 @@ class Maze extends Group {
 
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
-        let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
+        //let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
         const segments = 10*gridScale;
         if (normal.x == 1) {
             wallGeo = new BoxGeometry( gridScale/10, gridScale+ gridScale/20, gridScale + gridScale/20, segments, segments, segments);
-            mirrorGeo.rotateY(Math.PI / 2.0)
+            //mirrorGeo.rotateY(Math.PI / 2.0)
         } else if (normal.y == 1) {
             wallGeo = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
@@ -231,26 +246,28 @@ class Maze extends Group {
         
     }
 
-    addFloor(y, gridSize, gridScale, smooth) {
-        if (false) {
-            let mirrorGeo = new PlaneGeometry(gridSize*gridScale, gridSize* gridScale );
-            mirrorGeo.rotateX(- Math.PI / 2.0);
-            let mirrorWall = new Reflector( mirrorGeo, {
-                clipBias: 0.003,
-                textureWidth: window.innerWidth * window.devicePixelRatio,
-                textureHeight: window.innerHeight * window.devicePixelRatio,
-                color: 0x777777
-            });
-            
-            mirrorWall.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale));
-            this.add(mirrorWall); 
+    addFloor(level, gridSize, gridScale, hasOpening) {
+        if (hasOpening) {
+            let openingX = Math.min(Math.floor(Math.random()*gridSize), gridSize-1);
+            let openingZ = Math.min(Math.floor(Math.random()*gridSize), gridSize-1);
+            for(let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (i == openingX && j == openingZ) { continue; }
+                    let x = (i - 0.5)*gridScale;
+                    let y = (level - 0.5)*gridScale;
+                    let z = (j - 0.5)*gridScale;
+                    let pos = new Vector3(x, y, z);
+                    let normal = new Vector3(0, 1, 0);
+                    this.addWall(pos, normal, gridScale);
+                }
+            }
         } else {
             let segments = 10*gridSize*gridScale;
             let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
             floorGeo = this.addNoise(floorGeo, gridScale);
             const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
             const floor = new Mesh(floorGeo, material);
-            floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
+            floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, level*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
             this.add(floor);
         }
     }
