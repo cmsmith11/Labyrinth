@@ -1,133 +1,140 @@
-import { Group, BoxGeometry, BufferGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide, MeshPhongMaterial, TextureLoader, MeshStandardMaterial} from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { Reflector } from 'three/examples/jsm/objects/Reflector.js'; 
+import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh, 
+    DoubleSide, MeshPhongMaterial, TextureLoader} from 'three';
 
 class Maze extends Group {
     constructor(parent) {
         // Call parent Group() constructor
         super();
-
         // Init state
         this.state = {
             gui: parent.state.gui,            
         };
         this.name = 'maze'
-
+        // build the maze
         this.buildRandomMaze();
-
         // Add self to parent's update list
         parent.addToUpdateList(this);
     }
 
-    buildRandomMaze(){
-        const gridSize = 5.0
-        const gridScale = 5.0
-
-        
-
-        for (let k = 0; k <= gridSize; k++) {  
-            if (k < gridSize) { //<gridSize after debug
-                this.addMazeLevel(k, gridSize, gridScale);
+    // Builds a random, 3d maze that has gridSize x gridSize x gridSize cells 
+    // with each cell having dimensions gridScale x gridScale x gridScale
+    buildRandomMaze() {
+        const gridSize = 5.0;
+        const gridScale = 5.0;
+        for (let level = 0; level <= gridSize; level++) {  
+            if (level < gridSize) {
+                this.addMazeLevel(level, gridSize, gridScale);
             }
-            if (k == 0 || k == gridSize) {
-                this.addFloor(k, gridSize, gridScale, false);
+            if (level == 0 || level == gridSize) {
+                this.addFloor(level, gridSize, gridScale, false);
             }
             else {
-                this.addFloor(k, gridSize, gridScale, true);
+                this.addFloor(level, gridSize, gridScale, true);
             }
-        }
-        
-        
+        }   
     }
 
-    addMazeLevel(level, gridSize, gridScale){
-        // Inner Walls
+    // Builds inner walls of the maze at the given level
+    addMazeInnerWalls(level, gridSize, gridScale) {
         const toExclude = this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
         let ex = 0;
-        for(let i = 0; i < gridSize - 1; i ++) {
-            let x = i*gridScale;
+        for(let i = 0; i < gridSize - 1; i++) {
+            let x = i * gridScale;
             while (ex < toExclude.length && toExclude[ex].x < x) {
                 ex++;
             }
-            for (let j = 0; j < gridSize; j ++) {
-                let y = (j - 0.5)*gridScale;
+            for (let j = 0; j < gridSize; j++) {
+                let z = (j - 0.5) * gridScale;
                 if (ex < toExclude.length && toExclude[ex].x == x) {
-                    while (ex < toExclude.length && toExclude[ex].y < y) {
+                    while (ex < toExclude.length && toExclude[ex].z < z) {
                         ex++;
                     }
-                    if (ex < toExclude.length && toExclude[ex].y == y) {
-                    ex++;
-                    continue;
+                    if (ex < toExclude.length && toExclude[ex].z == z) {
+                        ex++;
+                        continue;
                     }
                 }
-                //const pos = new Vector3(x, y, 0);
-                const pos = new Vector3(x, level*gridScale, y);
+                const pos = new Vector3(x, level*gridScale, z);
                 const normal = new Vector3(1, 0, 0);
                 this.addWall(pos, normal, gridScale);
             }
         }
         ex = 0;
-        for(let i = 0; i < gridSize; i ++) {
+        for(let i = 0; i < gridSize; i++) {
             let x = (i - 0.5)*gridScale;
             while (ex < toExclude.length && toExclude[ex].x < x) {
                 ex++;
             }
-            for (let j = 0; j < gridSize - 1; j ++) {
-                let y = j*gridScale;
+            for (let j = 0; j < gridSize - 1; j++) {
+                let z = j*gridScale;
                 if (ex < toExclude.length && toExclude[ex].x == x) {
-                    while (ex < toExclude.length && toExclude[ex].y < y) {
+                    while (ex < toExclude.length && toExclude[ex].z < z) {
                         ex++;
                     }
-                    if (ex < toExclude.length && toExclude[ex].y == y) {
-                    ex++;
-                    continue;
+                    if (ex < toExclude.length && toExclude[ex].z == z) {
+                        ex++;
+                        continue;
                     }
                 }
-                //const pos = new Vector3(x, y, 0);
-                const pos = new Vector3(x, level*gridScale, y);
-                //const normal = new Vector3(0, 1, 0);
+                const pos = new Vector3(x, level*gridScale, z);
                 const normal = new Vector3(0, 0, 1);
                 this.addWall(pos, normal, gridScale);
             }
         }
-        // Outer Walls
-        for (let j = 0; j < gridSize; j ++) {
-            let y = (j - 0.5)*gridScale;
+    }
+
+    // Builds outer walls of the maze at the given level
+    addMazeOuterWalls(level, gridSize, gridScale) {
+        for (let j = 0; j < gridSize; j++) {
             const normal = new Vector3(1, 0, 0);
             let x = -1 * gridScale;
-            //const pos = new Vector3(x, y, 0);
-            const pos = new Vector3(x, level*gridScale, y);
+            let y = level * gridScale;
+            let z = (j - 0.5) * gridScale;
+            const pos = new Vector3(x, y, z);
             this.addWall(pos, normal, gridScale);
             x = gridScale * (gridSize - 1);
-            //pos = new Vector3(x, y, 0);
-            pos = new Vector3(x, level*gridScale, y);
+            pos = new Vector3(x, y, z);
             this.addWall(pos, normal, gridScale);
         }
-        for (let i = 0; i < gridSize; i ++) {
-            let x = (i - 0.5)*gridScale;
-            //const normal = new Vector3(0, 1, 0);
+        for (let i = 0; i < gridSize; i++) {
             const normal = new Vector3(0, 0, 1);
-            let y = -1 * gridScale;
-            //const pos = new Vector3(x, y, 0);
-            const pos = new Vector3(x, level*gridScale, y);
+            let x = (i - 0.5) * gridScale;
+            let y = level * gridScale;
+            let z = -1 * gridScale;
+            const pos = new Vector3(x, y, z);
             this.addWall(pos, normal, gridScale);
-            y = gridScale * (gridSize - 1);
-            //pos = new Vector3(x, y, 0);
-            pos = new Vector3(x, level*gridScale, y);
+            z = gridScale * (gridSize - 1);
+            pos = new Vector3(x, y, z);
             this.addWall(pos, normal, gridScale);
         }
     }
 
+    // Adds the inner and outer walls of the maze at a given level
+    addMazeLevel(level, gridSize, gridScale){
+        this.addMazeInnerWalls(level, gridSize, gridScale);
+        this.addMazeOuterWalls(level, gridSize, gridScale);
+    }
+
+    // gets the neighbors [[n1.x, n1.z], [...], ...] to cell (i, j) in 
+    // a grid of rows x cols
     getNeighbors(i, j, rows, cols) {
         let neighbors = [];
-        if (i > 1) { neighbors.push([i - 1, j]); }
-        if (i < rows - 1) { neighbors.push([i + 1, j]); }
-        if (j > 1){ neighbors.push([i, j - 1]); }
-        if (j < cols - 1) { neighbors.push([i, j + 1]); }
+        if (i > 1) { 
+            neighbors.push([i - 1, j]); 
+        }
+        if (i < rows - 1) { 
+            neighbors.push([i + 1, j]); 
+        }
+        if (j > 1){ 
+            neighbors.push([i, j - 1]); 
+        }
+        if (j < cols - 1) { 
+            neighbors.push([i, j + 1]); 
+        }
         return neighbors;
     }
 
+    // randomly shuffles an array
     shuffle(arr) {
         let c = arr.length;
         while (c > 0) {
@@ -139,16 +146,20 @@ class Maze extends Group {
         }
     }
 
+    // get the coordinates of the wall separating cell(i, j) from cell(m, n)
+    // this is not adjusted for gridScale (that happens later)
     getWallFromCellCoordinates(i, j, m, n) {
-            i = i - 1.5;
-            m = m - 1.5;
-            j = j - 1.5;
-            n = n - 1.5;
-        
-        const wall = new Vector3(i + (m - i) / 2.0, j + (n - j) / 2.0, 0);
+        i = i - 1.5;
+        m = m - 1.5;
+        j = j - 1.5;
+        n = n - 1.5;
+        const wall = new Vector3(i + (m - i) / 2.0, 0, j + (n - j) / 2.0);
         return wall;
     }
 
+    // generate the maze pattern using a recursive depth first search based algorithm
+    // determines which walls to exclude to make passageways in the final
+    // maze and stores their coordinates in toExclude
     mazeGen(i, j, rows, cols, visited, scale, toExclude) {
         visited[i][j] = true;
         const neighbors = this.getNeighbors(i, j, rows, cols);
@@ -163,7 +174,8 @@ class Maze extends Group {
         }
     }
 
-    wallsToExclude(rows, cols, scale){
+    // gets the sorted list of walls to exclude based on mazeGen
+    wallsToExclude(rows, cols, scale) {
         const visited = [];
         for (let i = 0; i < rows; i++) {
             visited[i] = [];
@@ -171,19 +183,18 @@ class Maze extends Group {
                 visited[i].push(false);
             }
         }
-
-        let startx = Math.min(Math.floor(Math.random() * rows), rows - 1)
-        let starty = Math.min(Math.floor(Math.random() * cols), cols - 1)
+        let startx = Math.min(Math.floor(Math.random() * rows), rows - 1);
+        let starty = Math.min(Math.floor(Math.random() * cols), cols - 1);
         const toExclude = [];
         this.mazeGen(startx, starty, rows, cols, visited, scale, toExclude);
-        toExclude.sort((a, b) => a.x == b.x ? a.y - b.y : a.x - b.x);
+        toExclude.sort((a, b) => a.x == b.x ? a.z - b.z : a.x - b.x);
         return toExclude;
     }
 
+    // adds random noise to the vertices in a geometry and returns
+    // the new geometry
     addNoise(geometry, scale) {
         let newGeo = geometry.clone();
-        // let newGeo = new BufferGeometry();
-        // newGeo.fromGeometry(geometry);
         const positions = newGeo.attributes.position.array;
         const num_points = positions.length / 3;
         let index = 0;
@@ -198,8 +209,7 @@ class Maze extends Group {
         return newGeo;
     }
 
-    
-
+    // creates a material to be used in walls, based on a texture
     createWallMaterial() {
         const textureLoader = new TextureLoader();
         const texture = textureLoader.load('src/components/objects/Maze/waterTexture.png');
@@ -211,28 +221,25 @@ class Maze extends Group {
         return material;
     }
 
+    // adds a wall at position pos with normal normal
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
         //let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
-        const segments = 10*gridScale;
+        const segments = 10 * gridScale;
+        const wallDepth = gridScale / 10;
         if (normal.x == 1) {
-            wallGeo = new BoxGeometry( gridScale/10, gridScale+ gridScale/20, gridScale + gridScale/20, segments, segments, segments);
+            wallGeo = new BoxGeometry(wallDepth, gridScale, gridScale, segments, segments, segments);
             //mirrorGeo.rotateY(Math.PI / 2.0)
         } else if (normal.y == 1) {
-            wallGeo = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry(gridScale, wallDepth, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
-            wallGeo = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
+            wallGeo = new BoxGeometry(gridScale, gridScale, wallDepth, segments, segments, segments);
         }
-        //wallGeo = this.addNoise(wallGeo, gridScale);
-        //const material = new MeshNormalMaterial({ flatShading:true, side: DoubleSide} );
-
-        //const material = new MeshPhongMaterial({color: 0x49ef4});
-        // MAKE CUSTOM MATERIAL
         const material = this.createWallMaterial();
-        const cube = new Mesh( wallGeo, material );
-        cube.normal = normal;
-        cube.position.add(pos);
-        this.add(cube);
+        const wall = new Mesh(wallGeo, material);
+        wall.normal = normal;
+        wall.position.add(pos);
+        this.add(wall);
         // if (Math.random < 0.1) {
         //     let mirrorWall = new Reflector( mirrorGeo, {
         //         clipBias: 0.003,
@@ -242,39 +249,44 @@ class Maze extends Group {
         //     });
         //     mirrorWall.position.add(pos);
         //     this.add(mirrorWall); 
-        // }
-        
+        // }   
     }
 
+    // adds a floor at level, if hasOpening, one opening per floor is added to make it 
+    // possible to get to any floor in the 3d maze
     addFloor(level, gridSize, gridScale, hasOpening) {
         if (hasOpening) {
-            let openingX = Math.min(Math.floor(Math.random()*gridSize), gridSize-1);
-            let openingZ = Math.min(Math.floor(Math.random()*gridSize), gridSize-1);
+            let openingX = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
+            let openingZ = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
             for(let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     if (i == openingX && j == openingZ) { continue; }
-                    let x = (i - 0.5)*gridScale;
-                    let y = (level - 0.5)*gridScale;
-                    let z = (j - 0.5)*gridScale;
+                    let x = (i - 0.5) * gridScale;
+                    let y = (level - 0.5) * gridScale;
+                    let z = (j - 0.5) * gridScale;
                     let pos = new Vector3(x, y, z);
                     let normal = new Vector3(0, 1, 0);
                     this.addWall(pos, normal, gridScale);
                 }
             }
         } else {
-            let segments = 10*gridSize*gridScale;
-            let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
+            let segments = 10 * gridSize * gridScale;
+            const floorThickness = gridScale / 10;
+            const floorWidth = gridSize * gridSize;
+            let floorGeo = new BoxGeometry(floorWidth, floorThickness, floorWidth, segments, segments, segments);
             floorGeo = this.addNoise(floorGeo, gridScale);
             const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
             const floor = new Mesh(floorGeo, material);
-            floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, level*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
+            let x = gridSize * gridScale / 2.0 - gridScale;
+            let y = level * gridScale - gridScale / 2.0;
+            let z = gridSize * gridScale / 2.0 - gridScale;
+            floor.position.add(new Vector3(x, y, z)); 
             this.add(floor);
         }
     }
 
     update(timeStamp) {
-        // Advance tween animations, if any exist
-        TWEEN.update();
+        // nothing to update
     }
 }
 
