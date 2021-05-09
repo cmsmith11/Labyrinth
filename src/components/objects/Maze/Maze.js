@@ -1,4 +1,4 @@
-import { Group, BoxGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide} from 'three';
+import { Group, BoxGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide, MeshPhongMaterial} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
@@ -26,7 +26,7 @@ class Maze extends Group {
         const gridScale = 5.0
 
         // Inner Walls
-        const toExclude = []; //this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
+        const toExclude = this.wallsToExclude(gridSize + 1, gridSize + 1, gridScale);
         let ex = 0;
         for(let i = 0; i < gridSize - 1; i ++) {
             let x = i*gridScale;
@@ -100,6 +100,8 @@ class Maze extends Group {
             pos = new Vector3(x, 0, y);
             this.addWall(pos, normal, gridScale);
         }
+        this.addFloor(0, gridSize, gridScale, true);
+        this.addFloor(1, gridSize, gridScale, false); 
         
     }
 
@@ -171,7 +173,7 @@ class Maze extends Group {
         let index = 0;
         for (let i = 0; i < num_points; i++) {
             let rx = (Math.random() - 0.5) * scale / 10;
-            let ry = 0;
+            let ry = (Math.random() - 0.5) * scale / 10;
             let rz = (Math.random() - 0.5) * scale / 10;
             positions[index ++] += rx;
             positions[index ++] += ry;
@@ -182,8 +184,8 @@ class Maze extends Group {
 
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
-        let mirrorGeo = new PlaneGeometry(gridScale, gridScale);;
-        const segments = 10;
+        let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
+        const segments = 10*gridScale;
         if (normal.x == 1) {
             wallGeo = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
             mirrorGeo.rotateY(Math.PI / 2.0)
@@ -193,22 +195,48 @@ class Maze extends Group {
             wallGeo = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
         }
         wallGeo = this.addNoise(wallGeo, gridScale);
-        const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );
-        if (Math.random() < 0.1){
+        //const material = new MeshNormalMaterial({ flatShading:true, side: DoubleSide} );
+
+        const material = new MeshPhongMaterial({color: 0x49ef4});
+        // MAKE CUSTOM MATERIAL
+        console.log(material)
+        const cube = new Mesh( wallGeo, material );
+        cube.position.add(pos);
+        this.add(cube);
+        // if (Math.random < 0.1) {
+        //     let mirrorWall = new Reflector( mirrorGeo, {
+        //         clipBias: 0.003,
+        //         textureWidth: window.innerWidth * window.devicePixelRatio,
+        //         textureHeight: window.innerHeight * window.devicePixelRatio,
+        //         color: 0x777777
+        //     });
+        //     mirrorWall.position.add(pos);
+        //     this.add(mirrorWall); 
+        // }
+        
+    }
+
+    addFloor(y, gridSize, gridScale, smooth) {
+        if (smooth) {
+            let mirrorGeo = new PlaneGeometry(gridSize*gridScale, gridSize* gridScale );
+            mirrorGeo.rotateX(- Math.PI / 2.0);
             let mirrorWall = new Reflector( mirrorGeo, {
                 clipBias: 0.003,
                 textureWidth: window.innerWidth * window.devicePixelRatio,
                 textureHeight: window.innerHeight * window.devicePixelRatio,
                 color: 0x777777
             });
-            //let mirrorWall = new Mesh(mirrorGeo, material);
-            mirrorWall.position.add(pos);
+            
+            mirrorWall.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale));
             this.add(mirrorWall); 
         } else {
-            
-            const cube = new Mesh( wallGeo, material );
-            cube.position.add(pos);
-            this.add(cube);
+            let segments = 10*gridSize*gridScale;
+            let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
+            floorGeo = this.addNoise(floorGeo, gridScale)
+            const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
+            const floor = new Mesh(floorGeo, material);
+            floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
+            this.add(floor);
         }
     }
 

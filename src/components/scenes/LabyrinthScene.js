@@ -1,5 +1,5 @@
 import * as Dat from 'dat.gui';
-import { Scene, Color, Box3, Vector3, Box3Helper } from 'three';
+import { Scene, Color} from 'three';
 import { Maze } from 'objects';
 import { BasicLights } from 'lights';
 
