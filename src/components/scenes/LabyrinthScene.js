@@ -4,7 +4,7 @@ import { Maze } from 'objects';
 import { BasicLights } from 'lights';
 
 class LabyrinthScene extends Scene {
-    constructor() {
+    constructor(dimensions, scale) {
         // Call parent Scene() constructor
         super();
 
@@ -20,7 +20,7 @@ class LabyrinthScene extends Scene {
 
         // Add meshes to scene
         const lights = new BasicLights();
-        const maze = new Maze(this);
+        const maze = new Maze(this, dimensions, scale);
         // end goal
         let endGoal = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial({wireframe: true}));
         let x = Math.floor(Math.random() * 5) * 5 - 2.5;

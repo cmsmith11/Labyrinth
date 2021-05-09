@@ -1,8 +1,12 @@
+/**
+ * @author jrknott
+ */
+
 import { Group, BoxGeometry, Vector3, MeshNormalMaterial, Mesh, 
     DoubleSide, MeshPhongMaterial, TextureLoader} from 'three';
 
 class Maze extends Group {
-    constructor(parent) {
+    constructor(parent, dimensions, scale) {
         // Call parent Group() constructor
         super();
         // Init state
@@ -11,16 +15,16 @@ class Maze extends Group {
         };
         this.name = 'maze'
         // build the maze
-        this.buildRandomMaze();
+        this.buildRandomMaze(dimensions, scale);
         // Add self to parent's update list
         parent.addToUpdateList(this);
     }
 
     // Builds a random, 3d maze that has gridSize x gridSize x gridSize cells 
     // with each cell having dimensions gridScale x gridScale x gridScale
-    buildRandomMaze() {
-        const gridSize = 5.0;
-        const gridScale = 5.0;
+    buildRandomMaze(dimensions, scale) {
+        const gridSize = dimensions;
+        const gridScale = scale;
         for (let level = 0; level <= gridSize; level++) {  
             if (level < gridSize) {
                 this.addMazeLevel(level, gridSize, gridScale);
@@ -193,21 +197,21 @@ class Maze extends Group {
 
     // adds random noise to the vertices in a geometry and returns
     // the new geometry
-    addNoise(geometry, scale) {
-        let newGeo = geometry.clone();
-        const positions = newGeo.attributes.position.array;
-        const num_points = positions.length / 3;
-        let index = 0;
-        for (let i = 0; i < num_points; i++) {
-            let rx = (Math.random() - 0.5) * scale / 10;
-            let ry = (Math.random() - 0.5) * scale / 10;
-            let rz = (Math.random() - 0.5) * scale / 10;
-            positions[index ++] += rx;
-            positions[index ++] += ry;
-            positions[index ++] += rz;
-        }
-        return newGeo;
-    }
+    // addNoise(geometry, scale) {
+    //     let newGeo = geometry.clone();
+    //     const positions = newGeo.attributes.position.array;
+    //     const num_points = positions.length / 3;
+    //     let index = 0;
+    //     for (let i = 0; i < num_points; i++) {
+    //         let rx = (Math.random() - 0.5) * scale / 10;
+    //         let ry = (Math.random() - 0.5) * scale / 10;
+    //         let rz = (Math.random() - 0.5) * scale / 10;
+    //         positions[index ++] += rx;
+    //         positions[index ++] += ry;
+    //         positions[index ++] += rz;
+    //     }
+    //     return newGeo;
+    // }
 
     // creates a material to be used in walls, based on a texture
     createWallMaterial() {
@@ -224,12 +228,10 @@ class Maze extends Group {
     // adds a wall at position pos with normal normal
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
-        //let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
         const segments = 10 * gridScale;
         const wallDepth = gridScale / 10;
         if (normal.x == 1) {
             wallGeo = new BoxGeometry(wallDepth, gridScale, gridScale, segments, segments, segments);
-            //mirrorGeo.rotateY(Math.PI / 2.0)
         } else if (normal.y == 1) {
             wallGeo = new BoxGeometry(gridScale, wallDepth, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
@@ -239,49 +241,24 @@ class Maze extends Group {
         const wall = new Mesh(wallGeo, material);
         wall.normal = normal;
         wall.position.add(pos);
-        this.add(wall);
-        // if (Math.random < 0.1) {
-        //     let mirrorWall = new Reflector( mirrorGeo, {
-        //         clipBias: 0.003,
-        //         textureWidth: window.innerWidth * window.devicePixelRatio,
-        //         textureHeight: window.innerHeight * window.devicePixelRatio,
-        //         color: 0x777777
-        //     });
-        //     mirrorWall.position.add(pos);
-        //     this.add(mirrorWall); 
-        // }   
+        this.add(wall); 
     }
 
     // adds a floor at level, if hasOpening, one opening per floor is added to make it 
     // possible to get to any floor in the 3d maze
     addFloor(level, gridSize, gridScale, hasOpening) {
-        if (hasOpening) {
-            let openingX = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
-            let openingZ = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
-            for(let i = 0; i < gridSize; i++) {
-                for (let j = 0; j < gridSize; j++) {
-                    if (i == openingX && j == openingZ) { continue; }
-                    let x = (i - 0.5) * gridScale;
-                    let y = (level - 0.5) * gridScale;
-                    let z = (j - 0.5) * gridScale;
-                    let pos = new Vector3(x, y, z);
-                    let normal = new Vector3(0, 1, 0);
-                    this.addWall(pos, normal, gridScale);
-                }
+        let openingX = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
+        let openingZ = Math.min(Math.floor(Math.random() * gridSize), gridSize - 1);
+        for(let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (hasOpening && i == openingX && j == openingZ) { continue; }
+                let x = (i - 0.5) * gridScale;
+                let y = (level - 0.5) * gridScale;
+                let z = (j - 0.5) * gridScale;
+                let pos = new Vector3(x, y, z);
+                let normal = new Vector3(0, 1, 0);
+                this.addWall(pos, normal, gridScale);
             }
-        } else {
-            let segments = 10 * gridSize * gridScale;
-            const floorThickness = gridScale / 10;
-            const floorWidth = gridSize * gridSize;
-            let floorGeo = new BoxGeometry(floorWidth, floorThickness, floorWidth, segments, segments, segments);
-            floorGeo = this.addNoise(floorGeo, gridScale);
-            const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
-            const floor = new Mesh(floorGeo, material);
-            let x = gridSize * gridScale / 2.0 - gridScale;
-            let y = level * gridScale - gridScale / 2.0;
-            let z = gridSize * gridScale / 2.0 - gridScale;
-            floor.position.add(new Vector3(x, y, z)); 
-            this.add(floor);
         }
     }
 

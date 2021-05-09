@@ -11,8 +11,32 @@ import { LabyrinthControls } from 'controls';
 import { Clock } from 'three';
 import { LabyrinthScene } from 'scenes';
 
+const scale = 5;
+var dimensions = null;
+var message = "How difficult do you want the maze to be? Enter an integer 0-5";
+while (dimensions == null) {
+    dimensions = prompt(message, "0");
+    message = "You must enter an integer between 0 and 5 to begin.";
+    if (isNaN(dimensions) || isNaN(parseFloat(dimensions)) || isNaN(parseInt(dimensions))) { 
+        dimensions == null; 
+        continue;
+    }
+    if (parseFloat(dimensions) != parseInt(dimensions)) {
+        dimensions = null;
+        continue;
+    }
+    let level = parseInt(dimensions);
+    if (level < 0 || level > 5) {
+        dimensions = null;
+        continue;
+    }
+    dimensions = level + 5;
+}
+
+console.log("The Maze will have dimension " + dimensions + "!");
+
 // Initialize core ThreeJS components
-const scene = new LabyrinthScene();
+const scene = new LabyrinthScene(dimensions, scale);
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
