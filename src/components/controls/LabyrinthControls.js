@@ -5,16 +5,20 @@
  *
  * @author cms11 / i dont have a website
  */
+ //import { Scene, Color, Box3, Vector3, Box3Helper, BoxGeometry, MeshNormalMaterial, Mesh } from 'three';
 
 import {
 	MathUtils,
 	Spherical,
-	Vector3
+	Vector3,
+	BoxGeometry,
+	MeshNormalMaterial,
+	Mesh
 } from "../../../node_modules/three/build/three.module.js";
 
 var EPS = 0.01;
 
-var LabyrinthControls = function ( object, domElement ) {
+var LabyrinthControls = function ( object, domElement, light ) {
 
 	if ( domElement === undefined ) {
 
@@ -66,9 +70,15 @@ var LabyrinthControls = function ( object, domElement ) {
 	this.viewHalfY = 0;
 
 	this.scene = undefined;
+	this.light = light;
 	this.previous = this.object.position;
 	this.didCollide = false;
 	this.collideResultPosition = undefined;
+
+	let box = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshNormalMaterial({wireframe: true}));
+    box.position.add(new Vector3(this.object.position.x, 0, this.object.position.z));
+	this.box = box;
+	// this.scene.add(this.box);
 
 	// private variables
 
@@ -235,76 +245,138 @@ var LabyrinthControls = function ( object, domElement ) {
 			}
 		}
 
+		let buf = 0.25;
+
+		// returns whether or not the point is in the bounding box
+		function inWall(boundBox, point) {
+			if (point.x > boundBox.min.x - buf && point.x < boundBox.max.x + buf &&
+				point.y > boundBox.min.y - buf && point.y < boundBox.max.y + buf &&
+				point.z > boundBox.min.z - buf && point.z < boundBox.max.z + buf) {
+				// in wall!
+				return true;
+			}
+			return false;
+		}
+
+		// returns the point on the surface of the bounding box closest to point
+		function toSurface(boundBox, point) {
+			let minDist;
+			let dist;
+			let closePair;
+			for (let i = 0; i < 3; i++) {
+				dist = Math.abs(point.getComponent(i) - boundBox.min.getComponent(i));
+				if (dist < minDist || minDist == undefined) {
+					closePair = [i, boundBox.min.getComponent(i) - buf];
+					minDist = dist;
+				}
+				dist = Math.abs(point.getComponent(i) - boundBox.max.getComponent(i));
+				if (dist < minDist) {
+					closePair = [i, boundBox.max.getComponent(i) + buf];
+					minDist = dist;
+				}
+			}
+			let surfacePoint = point.clone();
+			surfacePoint.setComponent(closePair[0], closePair[1]);
+			return surfacePoint;
+		}
+
 		let didCollide = false;
-		for ( const wall of maze.children ) {
-			if (wall.normal == undefined)
+		for (const wall of maze.children) {
+			let prev = this.previous;
+			let pos = this.object.position;
+			let box = wall.geometry.boundingBox;
+			let wallPos = wall.position;
+
+			if (pos.distanceTo(wallPos) > 6)
 				continue;
 
-			let halfWallThickness = 1.0;
-			let gridScale = 5 + EPS;
-
-			let prevVecMid = this.previous.clone().sub(wall.position);
-			let prevDotMid = wall.normal.dot(prevVecMid);
-			let wallSurface = wall.position.clone();
-
-			if (wall.normal.equals(new Vector3(1, 0, 0))) {
-				wallSurface.x += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
-
-				let posVec = this.object.position.clone().sub(wallSurface);
-				let posDot = wall.normal.dot(posVec);
-				let prevVec = this.previous.clone().sub(wallSurface);
-				let prevDot = wall.normal.dot(prevVec);
-
-				//if (posDot * prevDot <= 0 && this.object.position.z > wall.position.z - gridScale/2 && this.object.position.z < wall.position.z + gridScale/2) {
-				if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.z > wall.position.z - gridScale/2 && this.previous.z < wall.position.z + gridScale/2) {
-					// collision detected
-					didCollide = true;
-					this.collideResultPosition = this.object.position.clone();
-					this.collideResultPosition.x = wallSurface.x - EPS * (posDot / Math.abs(posDot));
-					if (this.collideResultPosition.z < wall.position.z - gridScale/2 || this.collideResultPosition.z > wall.position.z + gridScale/2) {
-						console.log('oh no!');
-						//this.collideResultPosition = this.previous;
-					}
-					// if (this.collideResultPosition.z < wall.position.z - gridScale/2)
-					// 	this.collideResultPosition.z = wall.position.z - gridScale/2;
-					// if (this.collideResultPosition.z > wall.position.z + gridScale/2)
-					// 	this.collideResultPosition.z = wall.position.z + gridScale/2;
-				}
-			} else if (wall.normal.equals(new Vector3(0, 0, 1))) {
-				wallSurface.z += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
-
-				let posVec = this.object.position.clone().sub(wallSurface);
-				let posDot = wall.normal.dot(posVec);
-				let prevVec = this.previous.clone().sub(wallSurface);
-				let prevDot = wall.normal.dot(prevVec);
-
-				//if (posDot * prevDot <= 0 && this.object.position.x > wall.position.x - gridScale/2 && this.object.position.x < wall.position.x + gridScale/2) {
-				if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.x > wall.position.x - gridScale/2 && this.previous.x < wall.position.x + gridScale/2) {
-					// collision detected
-					didCollide = true;
-					this.collideResultPosition = this.object.position.clone();
-					this.collideResultPosition.z = wallSurface.z - EPS * (posDot / Math.abs(posDot));
-					if (this.collideResultPosition.x < wall.position.x - gridScale/2 || this.collideResultPosition.x > wall.position.x + gridScale/2) {
-						console.log('oh no!');
-						//this.collideResultPosition = this.previous;
-					}
-					// if (this.collideResultPosition.x < wall.position.x - gridScale/2)
-					// 	this.collideResultPosition.x = wall.position.x - gridScale/2;
-					// if (this.collideResultPosition.x > wall.position.x + gridScale/2)
-					// 	this.collideResultPosition.x = wall.position.x + gridScale/2;
-				}
+			if (inWall(box, prev)) {
+				// move immediately to Surface
+				this.collideResultPosition = toSurface(box, prev);
+				return true; // didCollide
 			}
+
+			if (inWall(box, pos)) {
+				this.collideResultPosition = toSurface(box, pos);
+				return true;
+			}
+
 		}
+
+
+
+
+
+		// let didCollide = false;
+		// for ( const wall of maze.children ) {
+		// 	if (wall.normal == undefined)
+		// 		continue;
+
+		// 	let halfWallThickness = 1.0;
+		// 	let gridScale = 5 + EPS;
+
+		// 	let prevVecMid = this.previous.clone().sub(wall.position);
+		// 	let prevDotMid = wall.normal.dot(prevVecMid);
+		// 	let wallSurface = wall.position.clone();
+
+		// 	if (wall.normal.equals(new Vector3(1, 0, 0))) {
+		// 		wallSurface.x += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
+
+		// 		let posVec = this.object.position.clone().sub(wallSurface);
+		// 		let posDot = wall.normal.dot(posVec);
+		// 		let prevVec = this.previous.clone().sub(wallSurface);
+		// 		let prevDot = wall.normal.dot(prevVec);
+
+		// 		//if (posDot * prevDot <= 0 && this.object.position.z > wall.position.z - gridScale/2 && this.object.position.z < wall.position.z + gridScale/2) {
+		// 		if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.z > wall.position.z - gridScale/2 && this.previous.z < wall.position.z + gridScale/2) {
+		// 			// collision detected
+		// 			didCollide = true;
+		// 			this.collideResultPosition = this.object.position.clone();
+		// 			this.collideResultPosition.x = wallSurface.x - EPS * (posDot / Math.abs(posDot));
+		// 			if (this.collideResultPosition.z < wall.position.z - gridScale/2 || this.collideResultPosition.z > wall.position.z + gridScale/2) {
+		// 				console.log('oh no!');
+		// 				//this.collideResultPosition = this.previous;
+		// 			}
+		// 			// if (this.collideResultPosition.z < wall.position.z - gridScale/2)
+		// 			// 	this.collideResultPosition.z = wall.position.z - gridScale/2;
+		// 			// if (this.collideResultPosition.z > wall.position.z + gridScale/2)
+		// 			// 	this.collideResultPosition.z = wall.position.z + gridScale/2;
+		// 		}
+		// 	} else if (wall.normal.equals(new Vector3(0, 0, 1))) {
+		// 		wallSurface.z += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
+
+		// 		let posVec = this.object.position.clone().sub(wallSurface);
+		// 		let posDot = wall.normal.dot(posVec);
+		// 		let prevVec = this.previous.clone().sub(wallSurface);
+		// 		let prevDot = wall.normal.dot(prevVec);
+
+		// 		//if (posDot * prevDot <= 0 && this.object.position.x > wall.position.x - gridScale/2 && this.object.position.x < wall.position.x + gridScale/2) {
+		// 		if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.x > wall.position.x - gridScale/2 && this.previous.x < wall.position.x + gridScale/2) {
+		// 			// collision detected
+		// 			didCollide = true;
+		// 			this.collideResultPosition = this.object.position.clone();
+		// 			this.collideResultPosition.z = wallSurface.z - EPS * (posDot / Math.abs(posDot));
+		// 			if (this.collideResultPosition.x < wall.position.x - gridScale/2 || this.collideResultPosition.x > wall.position.x + gridScale/2) {
+		// 				console.log('oh no!');
+		// 				//this.collideResultPosition = this.previous;
+		// 			}
+		// 			// if (this.collideResultPosition.x < wall.position.x - gridScale/2)
+		// 			// 	this.collideResultPosition.x = wall.position.x - gridScale/2;
+		// 			// if (this.collideResultPosition.x > wall.position.x + gridScale/2)
+		// 			// 	this.collideResultPosition.x = wall.position.x + gridScale/2;
+		// 		}
+		// 	}
+		// }
 		// floor collision
-		if (this.object.position.y < 0) {
-			if (didCollide) {
-				this.collideResultPosition.y = 0;
-			} else {
-				didCollide = true;
-				this.collideResultPosition = this.object.position.clone();
-				this.collideResultPosition.y = 0;
-			}
-		}
+		// if (this.object.position.y < 0) {
+		// 	if (didCollide) {
+		// 		this.collideResultPosition.y = 0;
+		// 	} else {
+		// 		didCollide = true;
+		// 		this.collideResultPosition = this.object.position.clone();
+		// 		this.collideResultPosition.y = 0;
+		// 	}
+		// }
 		return didCollide;
 	};
 
@@ -328,6 +400,7 @@ var LabyrinthControls = function ( object, domElement ) {
 
 	};
 
+let dbg = 0;
 	this.update = function () {
 
 		var targetPosition = new Vector3();
@@ -427,6 +500,22 @@ var LabyrinthControls = function ( object, domElement ) {
 			targetPosition.setFromSphericalCoords( 1, phi, theta ).add( position );
 
 			this.object.lookAt( targetPosition );
+			
+			//let oldPos = this.light.target.position;
+			this.light.target.position.copy(targetPosition);//setFromSphericalCoords( 1, phi, theta ).add(oldPos);
+
+			this.light.position.copy(this.object.position);
+
+			// if (dbg == 0) {
+			// 	console.log(this.light.target.position);
+			// 	console.log(this.light.position);
+			// 	console.log(targetPosition);
+			// }
+			// dbg++;
+
+			//this.box.position.copy(this.object.position);
+			this.box.position.copy(targetPosition);
+			//this.box.posiiton.setFromSphericalCoords( 1, phi, theta );
 
 		};
 

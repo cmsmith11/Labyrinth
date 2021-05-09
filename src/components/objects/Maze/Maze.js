@@ -111,6 +111,11 @@ class Maze extends Group {
             pos = new Vector3(x, y, z);
             this.addWall(pos, normal, gridScale);
         }
+        //this.addFloor(0, gridSize, gridScale, true);
+        //this.addFloor(1, gridSize, gridScale, false);
+
+        // charlie edit here... work in progress...
+        this.wallMap = undefined;
     }
 
     // Adds the inner and outer walls of the maze at a given level
@@ -217,11 +222,11 @@ class Maze extends Group {
     createWallMaterial() {
         const textureLoader = new TextureLoader();
         const texture = textureLoader.load('src/components/objects/Maze/waterTexture.png');
-        const material = new MeshPhongMaterial({color: 'purple'});
+        const material = new MeshPhongMaterial({color: 'purple', emissive: 'black', reflectivity: 0.9});
         material.map = texture;
         material.displacementMap = texture;
         material.displacementScale = 0.1;
-        material.shininess = 1000;
+        material.shininess = 30;//1000;
         return material;
     }
 
@@ -238,9 +243,56 @@ class Maze extends Group {
             wallGeo = new BoxGeometry(gridScale, gridScale, wallDepth, segments, segments, segments);
         }
         const material = this.createWallMaterial();
+// <<<<<<< HEAD
+//         const cube = new Mesh( wallGeo, material );
+//         //cube.normal = normal;
+//         cube.position.add(pos);
+//         cube.geometry.computeBoundingBox();
+//         cube.geometry.boundingBox.min.add(pos);
+//         cube.geometry.boundingBox.max.add(pos);
+//         //console.log('cube', cube);
+//         this.add(cube);
+//         // if (Math.random < 0.1) {
+//         //     let mirrorWall = new Reflector( mirrorGeo, {
+//         //         clipBias: 0.003,
+//         //         textureWidth: window.innerWidth * window.devicePixelRatio,
+//         //         textureHeight: window.innerHeight * window.devicePixelRatio,
+//         //         color: 0x777777
+//         //     });
+//         //     mirrorWall.position.add(pos);
+//         //     this.add(mirrorWall); 
+//         // }
+        
+//     }
+
+//     addFloor(y, gridSize, gridScale, smooth) {
+//         if (false) {
+//             let mirrorGeo = new PlaneGeometry(gridSize*gridScale, gridSize* gridScale );
+//             mirrorGeo.rotateX(- Math.PI / 2.0);
+//             let mirrorWall = new Reflector( mirrorGeo, {
+//                 clipBias: 0.003,
+//                 textureWidth: window.innerWidth * window.devicePixelRatio,
+//                 textureHeight: window.innerHeight * window.devicePixelRatio,
+//                 color: 0x777777
+//             });
+            
+//             mirrorWall.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale));
+//             this.add(mirrorWall); 
+//         } else {
+//             let segments = 10*gridSize*gridScale;
+//             let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
+//             //floorGeo = this.addNoise(floorGeo, gridScale);
+//             const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
+//             const floor = new Mesh(floorGeo, material);
+//             floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
+//             this.add(floor);
+// =======
         const wall = new Mesh(wallGeo, material);
-        wall.normal = normal;
+        //wall.normal = normal;
         wall.position.add(pos);
+        wall.geometry.computeBoundingBox();
+        wall.geometry.boundingBox.min.add(pos);
+        wall.geometry.boundingBox.max.add(pos);
         this.add(wall); 
     }
 
@@ -259,6 +311,7 @@ class Maze extends Group {
                 let normal = new Vector3(0, 1, 0);
                 this.addWall(pos, normal, gridScale);
             }
+//>>>>>>> a22ec0fdcf2e66a02388aeab24b310002db62713
         }
     }
 

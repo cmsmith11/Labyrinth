@@ -6,10 +6,11 @@
  * handles window resizes.
  *
  */
-import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3, SpotLight } from 'three';
 import { LabyrinthControls } from 'controls';
 import { Clock } from 'three';
 import { LabyrinthScene } from 'scenes';
+import { BasicLights } from 'lights';
 
 const scale = 5;
 var dimensions = null;
@@ -41,8 +42,8 @@ const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
 // Set up camera
-let x = Math.floor(Math.random() * 5) * 5 - 2.5;
-let z = Math.floor(Math.random() * 5) * 5 - 2.5;
+let x = Math.floor(/*Math.random()*/0.001 * 5) * 5 - 2.5;
+let z = Math.floor(/*Math.random()*/0.001 * 5) * 5 - 2.5;
 camera.position.set(x, 0, z);
 camera.lookAt(new Vector3(x, 0, z));
 
@@ -55,11 +56,27 @@ document.body.style.overflow = 'hidden'; // Fix scrolling
 document.body.appendChild(canvas);
 
 // Set up controls
-const controls = new LabyrinthControls(camera, canvas);
+let spotLight = new SpotLight(0xffffff, 1);
+spotLight.position.set(x, 0, z);
+spotLight.angle = Math.PI * 0.2;
+spotLight.penumbra = 0.3;
+spotLight.decay = 2;
+spotLight.distance = 200;
+spotLight.target.position.set(0, 0, 0);
+scene.add(spotLight);
+scene.add(spotLight.target);
+
+const controls = new LabyrinthControls(camera, canvas, spotLight);
 controls.scene = scene;
-//controls.light = new BasicLights();
+controls.scene.add(controls.box);
+
 controls.movementSpeed = 5;
 controls.lookSpeed = 0.4;
+
+// let box = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial({wireframe: true}));
+// box.position.add(new Vector3(x, 0, z));
+// scene.add(box);
+// controls.box = box;
 
 // required for controls
 const clock = new Clock();
