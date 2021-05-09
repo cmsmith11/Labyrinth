@@ -253,7 +253,6 @@ class Maze extends Group {
             floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
             this.add(floor);
         }
-//>>>>>>> d4c7ad481c3d7d59c1d0e0ac89f98ee7ceb497ae
     }
 
     update(timeStamp) {

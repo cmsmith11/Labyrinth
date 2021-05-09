@@ -33,6 +33,7 @@ document.body.appendChild(canvas);
 // Set up controls
 const controls = new LabyrinthControls(camera, canvas);
 controls.scene = scene;
+//controls.light = new BasicLights();
 controls.movementSpeed = 5;
 controls.lookSpeed = 0.4;
 
