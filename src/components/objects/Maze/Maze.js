@@ -166,9 +166,9 @@ class Maze extends Group {
     }
 
     addNoise(geometry, scale) {
-        //let newGeo = geometry.clone();
-        let newGeo = new BufferGeometry();
-        newGeo.fromGeometry(geometry);
+        let newGeo = geometry.clone();
+        // let newGeo = new BufferGeometry();
+        // newGeo.fromGeometry(geometry);
         const positions = newGeo.attributes.position.array;
         const num_points = positions.length / 3;
         let index = 0;
