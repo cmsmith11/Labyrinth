@@ -1,7 +1,7 @@
-import { Group, BoxGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide, MeshPhongMaterial} from 'three';
+import { Group, BoxGeometry, PlaneGeometry, Vector3, MeshNormalMaterial, Mesh, DoubleSide, MeshPhongMaterial, TextureLoader, MeshStandardMaterial} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
+import { Reflector } from 'three/examples/jsm/objects/Reflector.js'; 
 
 class Maze extends Group {
     constructor(parent) {
@@ -182,24 +182,38 @@ class Maze extends Group {
         return newGeo;
     }
 
+    
+
+    createWallMaterial() {
+        const textureLoader = new TextureLoader();
+        const texture = textureLoader.load('src/components/objects/Maze/waterTexture.png');
+        const material = new MeshPhongMaterial({color: 'purple'});
+        material.map = texture;
+        material.displacementMap = texture;
+        material.displacementScale = 0.1;
+        material.shininess = 1000;
+        return material;
+    }
+
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
         let mirrorGeo = new PlaneGeometry(gridScale, gridScale);
         const segments = 10*gridScale;
         if (normal.x == 1) {
-            wallGeo = new BoxGeometry( gridScale/10, gridScale, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry( gridScale/10, gridScale+ gridScale/20, gridScale + gridScale/20, segments, segments, segments);
             mirrorGeo.rotateY(Math.PI / 2.0)
         } else if (normal.y == 1) {
             wallGeo = new BoxGeometry( gridScale, gridScale/10, gridScale, segments, segments, segments);
         } else if (normal.z == 1) {
             wallGeo = new BoxGeometry( gridScale, gridScale, gridScale/10, segments, segments, segments);
         }
-        wallGeo = this.addNoise(wallGeo, gridScale);
+        //wallGeo = this.addNoise(wallGeo, gridScale);
         //const material = new MeshNormalMaterial({ flatShading:true, side: DoubleSide} );
 
-        const material = new MeshPhongMaterial({color: 0x49ef4});
+        //const material = new MeshPhongMaterial({color: 0x49ef4});
         // MAKE CUSTOM MATERIAL
-        console.log(material)
+        const material = this.createWallMaterial();
+        
         const cube = new Mesh( wallGeo, material );
         cube.position.add(pos);
         this.add(cube);
@@ -232,7 +246,7 @@ class Maze extends Group {
         } else {
             let segments = 10*gridSize*gridScale;
             let floorGeo = new BoxGeometry(gridSize*gridScale, gridScale / 10, gridSize*gridScale, segments, segments, segments);
-            floorGeo = this.addNoise(floorGeo, gridScale)
+            floorGeo = this.addNoise(floorGeo, gridScale);
             const material = new MeshNormalMaterial({ flatShading: true, side: DoubleSide} );  
             const floor = new Mesh(floorGeo, material);
             floor.position.add(new Vector3(  gridSize*gridScale/2.0 - gridScale, y*gridScale - gridScale/2.0,   gridSize*gridScale/2.0 - gridScale)); 
