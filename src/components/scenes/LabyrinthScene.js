@@ -1,6 +1,6 @@
 import * as Dat from 'dat.gui';
 import { Scene, Color, Box3, Vector3, Box3Helper, BoxGeometry, MeshNormalMaterial, Mesh } from 'three';
-import { Maze } from 'objects';
+import { Maze, Trophy } from 'objects';
 import { BasicLights } from 'lights';
 
 class LabyrinthScene extends Scene {
@@ -10,8 +10,8 @@ class LabyrinthScene extends Scene {
 
         // Init state
         this.state = {
-            gui: new Dat.GUI(), // Create GUI for scene
-            rotationSpeed: 1,
+            //gui: new Dat.GUI(), // Create GUI for scene
+            //rotationSpeed: 1,
             updateList: [],
         };
 
@@ -19,6 +19,7 @@ class LabyrinthScene extends Scene {
         this.background = new Color(0x000000);
 
         // Add meshes to scene
+        //const flower = new Flower(this);
         const lights = new BasicLights();
         const maze = new Maze(this);
         // end goal
@@ -27,8 +28,9 @@ class LabyrinthScene extends Scene {
         let z = Math.floor(Math.random() * 5) * 5 - 2.5;
         endGoal.position.add(new Vector3(x, 0, z));
         //
+        const trophy = new Trophy(this);
 
-        this.add(maze, lights, endGoal);
+        this.add(maze, lights, endGoal, trophy);
 
         // Populate GUI
         //this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
