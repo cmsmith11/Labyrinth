@@ -3,7 +3,7 @@
  */
 
 import { Group, BoxGeometry, Vector3, Mesh, Color,
-         MeshPhongMaterial, TextureLoader} from 'three';
+         MeshPhongMaterial, TextureLoader, ColorKeyframeTrack} from 'three';
 
 class Maze extends Group {
     constructor(parent, dimensions, scale) {
@@ -277,7 +277,12 @@ class Maze extends Group {
             let f = distance / this.maxDist;
             let wall = walls[i];
             let color = new Color('purple');
+            let origlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
             color.b += (Math.sin(timeStamp / (500*f)) + 1) / 5;
+            let newlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
+            color.r *= origlen / newlen;
+            color.g *= origlen / newlen;
+            color.b *= origlen / newlen;
             wall.material.color = color;
         }
     }
