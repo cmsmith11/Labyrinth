@@ -4,6 +4,7 @@
 
 import { Group, BoxGeometry, Vector3, Mesh, Color,
          MeshPhongMaterial, TextureLoader, ColorKeyframeTrack} from 'three';
+import water from './waterTexture.png';
 
 class Maze extends Group {
     constructor(parent, dimensions, scale) {
@@ -226,7 +227,7 @@ class Maze extends Group {
     // creates a material to be used in walls, based on a texture
     createWallMaterial() {
         const textureLoader = new TextureLoader();
-        const texture = textureLoader.load('src/components/objects/Maze/waterTexture.png');
+        const texture = textureLoader.load(water);
         const material = new MeshPhongMaterial({color: 'purple', emissive: 'black', reflectivity: 0.9});
         material.map = texture;
         material.displacementMap = texture;
