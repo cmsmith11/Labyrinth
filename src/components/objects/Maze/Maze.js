@@ -2,7 +2,7 @@
  * @author jrknott
  */
 
-import { Group, BoxGeometry, Vector3, Mesh, 
+import { Group, BoxGeometry, Vector3, Mesh, Color,
          MeshPhongMaterial, TextureLoader} from 'three';
 
 class Maze extends Group {
@@ -233,14 +233,13 @@ class Maze extends Group {
     // adds a wall at position pos with normal normal
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
-        const segments = 10 * gridScale;
         const wallDepth = gridScale / 10;
         if (normal.x == 1) {
-            wallGeo = new BoxGeometry(wallDepth, gridScale, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry(wallDepth, gridScale, gridScale);
         } else if (normal.y == 1) {
-            wallGeo = new BoxGeometry(gridScale, wallDepth, gridScale, segments, segments, segments);
+            wallGeo = new BoxGeometry(gridScale, wallDepth, gridScale);
         } else if (normal.z == 1) {
-            wallGeo = new BoxGeometry(gridScale, gridScale, wallDepth, segments, segments, segments);
+            wallGeo = new BoxGeometry(gridScale, gridScale, wallDepth);
         }
         const material = this.createWallMaterial();
 
@@ -272,6 +271,12 @@ class Maze extends Group {
     }
 
     update(timeStamp) {
+        for (const wall of this.children) {
+            let color = new Color('purple');
+            color.b += (Math.sin(timeStamp / 1000) + 1) / 5;
+            wall.material.color = color;
+            //wall.material.color.g = Math.cos(timeStamp / 1000);
+        }
     }
 }
 

@@ -19,8 +19,6 @@ class LabyrinthScene extends Scene {
         this.background = new Color(0x000000);
 
         // Add meshes to scene
-        //const flower = new Flower(this);
-        const lights = new BasicLights();
         const maze = new Maze(this, dimensions, scale);
         // end goal
         let endGoal = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial({wireframe: true}));
@@ -30,7 +28,7 @@ class LabyrinthScene extends Scene {
         //
         const trophy = new Trophy(this);
 
-        this.add(maze, lights, endGoal, trophy);
+        this.add(maze, endGoal, trophy);
 
         // Populate GUI
         //this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
