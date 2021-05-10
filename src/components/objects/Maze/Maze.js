@@ -13,12 +13,16 @@ class Maze extends Group {
         this.state = {
             gui: parent.state.gui,       
         };
-        this.name = 'maze'
+        this.name = 'maze';
         this.maxDist = Math.sqrt(2*(dimensions*scale)*(dimensions*scale));
         // build the maze
         this.buildRandomMaze(dimensions, scale);
         // Add self to parent's update list
         parent.addToUpdateList(this);
+    }
+
+    clearMaze() {
+        this.children = [];
     }
 
     // Builds a random, 3d maze that has gridSize x gridSize x gridSize cells 
@@ -236,16 +240,15 @@ class Maze extends Group {
         let wallGeo = undefined;
         const wallDepth = gridScale / 10;
         if (normal.x == 1) {
-            wallGeo = new BoxGeometry(wallDepth, gridScale, gridScale);
+            wallGeo = new BoxGeometry(wallDepth, gridScale + wallDepth, gridScale + wallDepth);
         } else if (normal.y == 1) {
-            wallGeo = new BoxGeometry(gridScale, wallDepth, gridScale);
+            wallGeo = new BoxGeometry(gridScale + wallDepth, wallDepth, gridScale + wallDepth);
         } else if (normal.z == 1) {
-            wallGeo = new BoxGeometry(gridScale, gridScale, wallDepth);
+            wallGeo = new BoxGeometry(gridScale + wallDepth, gridScale + wallDepth, wallDepth);
         }
         const material = this.createWallMaterial();
 
         const wall = new Mesh(wallGeo, material);
-        //wall.normal = normal;
         wall.position.add(pos);
         wall.geometry.computeBoundingBox();
         wall.geometry.boundingBox.min.add(pos);

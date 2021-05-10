@@ -21,9 +21,13 @@ class LabyrinthScene extends Scene {
         const maze = new Maze(this, dimensions, scale);
         // end goal
         let endGoal = new Mesh(new BoxGeometry(1, 1, 1), new MeshNormalMaterial({wireframe: true}));
-        let x = Math.floor(Math.random() * 5) * 5 - 2.5;
-        let z = Math.floor(Math.random() * 5) * 5 - 2.5;
-        endGoal.position.add(new Vector3(x, 0, z));
+        // let x = Math.floor(Math.random() * 5) * 5 - 2.5;
+        // let z = Math.floor(Math.random() * 5) * 5 - 2.5;
+        let x = Math.floor(Math.random() * dimensions) * scale - scale/2;
+        let y = Math.floor(Math.random() * dimensions) * scale;
+        let z = Math.floor(Math.random() * dimensions) * scale - scale/2;
+        endGoal.name = 'endGoal';
+        endGoal.position.add(new Vector3(x, y, z));
         console.log(endGoal.position);
         this.destinationLoc = new Vector3();
         this.destinationLoc.copy(endGoal.position);
