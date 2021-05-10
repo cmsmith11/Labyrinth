@@ -303,80 +303,6 @@ var LabyrinthControls = function ( object, domElement, light ) {
 
 		}
 
-
-
-
-
-		// let didCollide = false;
-		// for ( const wall of maze.children ) {
-		// 	if (wall.normal == undefined)
-		// 		continue;
-
-		// 	let halfWallThickness = 1.0;
-		// 	let gridScale = 5 + EPS;
-
-		// 	let prevVecMid = this.previous.clone().sub(wall.position);
-		// 	let prevDotMid = wall.normal.dot(prevVecMid);
-		// 	let wallSurface = wall.position.clone();
-
-		// 	if (wall.normal.equals(new Vector3(1, 0, 0))) {
-		// 		wallSurface.x += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
-
-		// 		let posVec = this.object.position.clone().sub(wallSurface);
-		// 		let posDot = wall.normal.dot(posVec);
-		// 		let prevVec = this.previous.clone().sub(wallSurface);
-		// 		let prevDot = wall.normal.dot(prevVec);
-
-		// 		//if (posDot * prevDot <= 0 && this.object.position.z > wall.position.z - gridScale/2 && this.object.position.z < wall.position.z + gridScale/2) {
-		// 		if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.z > wall.position.z - gridScale/2 && this.previous.z < wall.position.z + gridScale/2) {
-		// 			// collision detected
-		// 			didCollide = true;
-		// 			this.collideResultPosition = this.object.position.clone();
-		// 			this.collideResultPosition.x = wallSurface.x - EPS * (posDot / Math.abs(posDot));
-		// 			if (this.collideResultPosition.z < wall.position.z - gridScale/2 || this.collideResultPosition.z > wall.position.z + gridScale/2) {
-		// 				console.log('oh no!');
-		// 				//this.collideResultPosition = this.previous;
-		// 			}
-		// 			// if (this.collideResultPosition.z < wall.position.z - gridScale/2)
-		// 			// 	this.collideResultPosition.z = wall.position.z - gridScale/2;
-		// 			// if (this.collideResultPosition.z > wall.position.z + gridScale/2)
-		// 			// 	this.collideResultPosition.z = wall.position.z + gridScale/2;
-		// 		}
-		// 	} else if (wall.normal.equals(new Vector3(0, 0, 1))) {
-		// 		wallSurface.z += halfWallThickness * (prevDotMid / Math.abs(prevDotMid));
-
-		// 		let posVec = this.object.position.clone().sub(wallSurface);
-		// 		let posDot = wall.normal.dot(posVec);
-		// 		let prevVec = this.previous.clone().sub(wallSurface);
-		// 		let prevDot = wall.normal.dot(prevVec);
-
-		// 		//if (posDot * prevDot <= 0 && this.object.position.x > wall.position.x - gridScale/2 && this.object.position.x < wall.position.x + gridScale/2) {
-		// 		if (posDot * prevDot <= 0 && this.previous.y < 10 && this.previous.x > wall.position.x - gridScale/2 && this.previous.x < wall.position.x + gridScale/2) {
-		// 			// collision detected
-		// 			didCollide = true;
-		// 			this.collideResultPosition = this.object.position.clone();
-		// 			this.collideResultPosition.z = wallSurface.z - EPS * (posDot / Math.abs(posDot));
-		// 			if (this.collideResultPosition.x < wall.position.x - gridScale/2 || this.collideResultPosition.x > wall.position.x + gridScale/2) {
-		// 				console.log('oh no!');
-		// 				//this.collideResultPosition = this.previous;
-		// 			}
-		// 			// if (this.collideResultPosition.x < wall.position.x - gridScale/2)
-		// 			// 	this.collideResultPosition.x = wall.position.x - gridScale/2;
-		// 			// if (this.collideResultPosition.x > wall.position.x + gridScale/2)
-		// 			// 	this.collideResultPosition.x = wall.position.x + gridScale/2;
-		// 		}
-		// 	}
-		// }
-		// floor collision
-		// if (this.object.position.y < 0) {
-		// 	if (didCollide) {
-		// 		this.collideResultPosition.y = 0;
-		// 	} else {
-		// 		didCollide = true;
-		// 		this.collideResultPosition = this.object.position.clone();
-		// 		this.collideResultPosition.y = 0;
-		// 	}
-		// }
 		return didCollide;
 	};
 
@@ -424,22 +350,6 @@ let dbg = 0;
 
 			var actualMoveSpeed = delta * this.movementSpeed;
 
-			// // for collision
-			// if (!this.collisionCheck()) {
-			// 	this.previous = this.object.position.clone();
-			// 	if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
-			// 	if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
-
-			// 	if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
-			// 	if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
-
-			// 	if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
-			// 	if ( this.moveDown ) this.object.translateY( - actualMoveSpeed * 5 );
-			// } else {
-			// 	//console.log('collided!');
-			// 	this.object.position.copy(this.collideResultPosition);
-			// }
-
 			// rotate to flat before translation
 			let ph = Math.PI / 2; // lat = 0
 			let th = MathUtils.degToRad(lon);
@@ -447,7 +357,6 @@ let dbg = 0;
 			this.object.lookAt(targetPosition);
 
 			// for collision
-			//let prevPrev = this.previous.clone();
 			this.previous = this.object.position.clone();
 			if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 			if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
@@ -455,14 +364,11 @@ let dbg = 0;
 			if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 			if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-			if ( this.moveUp ) this.object.translateY( 5 * actualMoveSpeed );
-			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed * 5 );
+			if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
+			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
 			if (this.collisionCheck()) {
-				//console.log('collided!');
-				//this.object.position.copy(this.previous);
 				this.object.position.copy(this.collideResultPosition);
-				//this.previous = prevPrev;
 			}
 
 			var actualLookSpeed = delta * this.lookSpeed;
@@ -501,21 +407,9 @@ let dbg = 0;
 
 			this.object.lookAt( targetPosition );
 			
-			//let oldPos = this.light.target.position;
-			this.light.target.position.copy(targetPosition);//setFromSphericalCoords( 1, phi, theta ).add(oldPos);
-
+			this.light.target.position.copy(targetPosition);
 			this.light.position.copy(this.object.position);
-
-			// if (dbg == 0) {
-			// 	console.log(this.light.target.position);
-			// 	console.log(this.light.position);
-			// 	console.log(targetPosition);
-			// }
-			// dbg++;
-
-			//this.box.position.copy(this.object.position);
 			this.box.position.copy(targetPosition);
-			//this.box.posiiton.setFromSphericalCoords( 1, phi, theta );
 
 		};
 
