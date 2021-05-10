@@ -14,6 +14,7 @@ class Maze extends Group {
             gui: parent.state.gui,       
         };
         this.name = 'maze'
+        this.maxDist = Math.sqrt(2*(dimensions*scale)*(dimensions*scale));
         // build the maze
         this.buildRandomMaze(dimensions, scale);
         // Add self to parent's update list
@@ -270,12 +271,14 @@ class Maze extends Group {
         }
     }
 
-    update(timeStamp) {
-        for (const wall of this.children) {
+    update(timeStamp, distance) {
+        let walls = this.children;
+        for (let i = 0; i < walls.length; i++) {
+            let f = distance / this.maxDist;
+            let wall = walls[i];
             let color = new Color('purple');
-            color.b += (Math.sin(timeStamp / 1000) + 1) / 5;
+            color.b += (Math.sin(timeStamp / (500*f)) + 1) / 5;
             wall.material.color = color;
-            //wall.material.color.g = Math.cos(timeStamp / 1000);
         }
     }
 }

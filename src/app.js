@@ -85,7 +85,9 @@ const clock = new Clock();
 const onAnimationFrameHandler = (timeStamp) => {
     controls.update(clock.getDelta());
     renderer.render(scene, camera);
-    scene.update && scene.update(timeStamp);
+    let pos = new Vector3();
+    pos.copy(camera.position);
+    scene.update && scene.update(timeStamp, pos);
     window.requestAnimationFrame(onAnimationFrameHandler);
 };
 window.requestAnimationFrame(onAnimationFrameHandler);

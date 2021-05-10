@@ -17,7 +17,6 @@ class LabyrinthScene extends Scene {
 
         // Set background to a nice color
         this.background = new Color(0x000000);
-
         // Add meshes to scene
         const maze = new Maze(this, dimensions, scale);
         // end goal
@@ -25,6 +24,9 @@ class LabyrinthScene extends Scene {
         let x = Math.floor(Math.random() * 5) * 5 - 2.5;
         let z = Math.floor(Math.random() * 5) * 5 - 2.5;
         endGoal.position.add(new Vector3(x, 0, z));
+        console.log(endGoal.position);
+        this.destinationLoc = new Vector3();
+        this.destinationLoc.copy(endGoal.position);
         //
         const trophy = new Trophy(this);
 
@@ -38,13 +40,13 @@ class LabyrinthScene extends Scene {
         this.state.updateList.push(object);
     }
 
-    update(timeStamp) {
+    update(timeStamp, cameraPos) {
         // const { rotationSpeed, updateList } = this.state;
         // this.rotation.y = (rotationSpeed * timeStamp) / 10000;
         const { updateList } = this.state;
         // Call update for each object in the updateList
         for (const obj of updateList) {
-            obj.update(timeStamp);
+            obj.update(timeStamp, this.destinationLoc.distanceTo(cameraPos));
         }
     }
 }
