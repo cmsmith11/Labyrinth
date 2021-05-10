@@ -75,9 +75,9 @@ var LabyrinthControls = function ( object, domElement, light ) {
 	this.didCollide = false;
 	this.collideResultPosition = undefined;
 
-	let box = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshNormalMaterial({wireframe: true}));
-    box.position.add(new Vector3(this.object.position.x, 0, this.object.position.z));
-	this.box = box;
+	// let box = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshNormalMaterial({wireframe: true}));
+ //    box.position.add(new Vector3(this.object.position.x, 0, this.object.position.z));
+	// this.box = box;
 	// this.scene.add(this.box);
 
 	// private variables
@@ -409,7 +409,7 @@ let dbg = 0;
 			
 			this.light.target.position.copy(targetPosition);
 			this.light.position.copy(this.object.position);
-			this.box.position.copy(targetPosition);
+			//this.box.position.copy(targetPosition);
 
 		};
 

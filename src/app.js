@@ -109,7 +109,7 @@ function setUpPlayer() {
 	spotLight.target.position.set(x, y, z);
 }
 const spotLight = new SpotLight(0xffffff, 1);
-spotLight.angle = Math.PI * 0.2;
+spotLight.angle = Math.PI * 0.4;
 spotLight.penumbra = 0.3;
 spotLight.decay = 2;
 spotLight.distance = 200;
