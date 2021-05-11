@@ -39,7 +39,11 @@ var dimensions = 0;
 // }
 
 function hidePregamePrompt(scene) {
-	dimensions = parseInt(document.getElementById("lvlInp").value) + 5;
+	let inp = document.getElementById("lvlInpPre").value;
+	//console.log('pre:', inp, parseInt(inp));
+	if (inp == '')
+		return;
+	dimensions = parseInt(inp) + 5;
 	document.getElementById("pregame").style.display = 'none';
 	// reset the maze
 	console.log('scene', scene);
@@ -71,8 +75,8 @@ const pregamePrompt = () => {
 	<span id=pregame style='position: absolute; left: "+x+"px; top: "+y+"px; \
 	height: "+h+"px; width: "+w+"px; background: blue; border-radius: 10px; display: block;'>\
 		<span style='position: relative; top: "+(h/2-40)+"px;'>\
-			<center style='position: relative; top: "+0+"px;'>enter difficulty (0-5)</center>\
-			<center><input id=lvlInp value='0' style='position: relative; top: "+10+"px;'></input><center>\
+			<center style='position: relative; top: "+0+"px;'>Enter Difficulty (0-5)</center>\
+			<center><input id=lvlInpPre value='' style='position: relative; top: "+10+"px;'></input><center>\
 			<center style='position: relative; top: "+20+"px;'>Press Enter to Start</center>\
 		</span>\
 	</span>\
@@ -80,6 +84,54 @@ const pregamePrompt = () => {
 	document.body.appendChild(elem);
 }
 pregamePrompt();
+
+// pregame prompt
+const endgamePrompt = () => {
+	let elem = document.createElement("SPAN");
+	let w = 500;
+	let h = 300;
+	let x = window.innerWidth / 2 - w / 2;
+	let y = window.innerHeight / 2 - h / 2;
+	elem.innerHTML = "\
+	<span id=endgame style='position: absolute; left: "+x+"px; top: "+y+"px; \
+	height: "+h+"px; width: "+w+"px; background: blue; border-radius: 10px; display: none;'>\
+		<span style='position: relative; top: "+(h/2-40)+"px;'>\
+			<center style='position: relative; top: "+(-10)+"px;'>You win! Play again?</center>\
+			<center style='position: relative; top: "+0+"px;'>Enter Difficulty (0-5)</center>\
+			<center><input id=lvlInpEnd value='' style='position: relative; top: "+10+"px;'></input><center>\
+			<center style='position: relative; top: "+20+"px;'>Press Enter to Start</center>\
+		</span>\
+	</span>\
+	";
+	document.body.appendChild(elem);
+}
+endgamePrompt();
+
+const showEndgamePrompt = () => {
+	document.getElementById("endgame").style.display = 'block';
+}
+
+const hideEndgamePrompt = (scene) => {
+	let inp = document.getElementById("lvlInpEnd").value;
+	//console.log('end:', inp, parseInt(inp), inp == '');
+	if (inp == '')
+		return;
+	dimensions = parseInt(inp) + 5;
+	document.getElementById("endgame").style.display = 'none';
+	// reset the maze
+	console.log('scene', scene);
+	scene.children[0].children = [];
+	scene.children[0].maxDist = Math.sqrt(2*(dimensions*scale)*(dimensions*scale));
+    scene.children[0].buildRandomMaze(dimensions, scale);
+
+    let x = Math.floor(Math.random() * dimensions) * scale - scale/2;
+    let y = Math.floor(Math.random() * dimensions) * scale;
+    let z = Math.floor(Math.random() * dimensions) * scale - scale/2;
+    scene.children[1].position.set(x, y, z);
+    console.log(scene.children[1].position);
+    setUpPlayer();
+    scene.destinationLoc.copy(scene.children[1].position);
+}
 
 console.log("The Maze will have dimension " + dimensions + "!");
 
@@ -102,14 +154,18 @@ function setUpPlayer() {
 	let y = Math.floor(Math.random() * dimensions) * scale;
 	let z = Math.floor(Math.random() * dimensions) * scale - scale/2;
 	camera.position.set(x, y, z);
-	camera.lookAt(new Vector3(x, y, z));
+	let halfDist = (dimensions / 2) * scale - scale/2;
+	camera.lookAt(new Vector3(halfDist, y, halfDist));
 
 	// Set up controls
 	spotLight.position.set(x, y, z);
-	spotLight.target.position.set(x, y, z);
+	spotLight.target.position.set(halfDist, y, halfDist);
+	controls.mouseX = 0;
+	controls.mouseY = 0;
+	controls.object.lookAt(new Vector3(halfDist, y, halfDist));
 }
 const spotLight = new SpotLight(0xffffff, 1);
-spotLight.angle = Math.PI * 0.2;
+spotLight.angle = Math.PI * 0.4;
 spotLight.penumbra = 0.3;
 spotLight.decay = 2;
 spotLight.distance = 200;
@@ -138,6 +194,12 @@ const onAnimationFrameHandler = (timeStamp) => {
     let pos = new Vector3();
     pos.copy(camera.position);
     scene.update && scene.update(timeStamp, pos);
+
+    //console.log(scene.destinationLoc.distanceTo(pos));
+    if (scene.destinationLoc.distanceTo(pos) != 0 && scene.destinationLoc.distanceTo(pos) < 3) {
+    	showEndgamePrompt();
+    }
+
 	window.requestAnimationFrame(onAnimationFrameHandler);
 };
 window.requestAnimationFrame(onAnimationFrameHandler);
@@ -157,6 +219,7 @@ const keydownHandler = (event) => {
 	//console.log('key', k);
 	if (k == 'Enter') {
 		hidePregamePrompt(scene);
+		hideEndgamePrompt(scene);
 	}
 	if (k == 'Escape') {
 		showPregamePrompt();

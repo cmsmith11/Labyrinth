@@ -75,9 +75,9 @@ var LabyrinthControls = function ( object, domElement, light ) {
 	this.didCollide = false;
 	this.collideResultPosition = undefined;
 
-	let box = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshNormalMaterial({wireframe: true}));
-    box.position.add(new Vector3(this.object.position.x, 0, this.object.position.z));
-	this.box = box;
+	// let box = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshNormalMaterial({wireframe: true}));
+ //    box.position.add(new Vector3(this.object.position.x, 0, this.object.position.z));
+	// this.box = box;
 	// this.scene.add(this.box);
 
 	// private variables
@@ -235,7 +235,7 @@ var LabyrinthControls = function ( object, domElement, light ) {
 
 	};
 
-	this.collisionCheck = function () {
+	this.collisionCheck = function (prev, pos) {
 		const { updateList } = this.scene.state;
 		let maze;
 		for (const obj of updateList) {
@@ -245,7 +245,7 @@ var LabyrinthControls = function ( object, domElement, light ) {
 			}
 		}
 
-		let buf = 0.25;
+		let buf = 0.5;
 
 		// returns whether or not the point is in the bounding box
 		function inWall(boundBox, point) {
@@ -266,12 +266,12 @@ var LabyrinthControls = function ( object, domElement, light ) {
 			for (let i = 0; i < 3; i++) {
 				dist = Math.abs(point.getComponent(i) - boundBox.min.getComponent(i));
 				if (dist < minDist || minDist == undefined) {
-					closePair = [i, boundBox.min.getComponent(i) - buf];
+					closePair = [i, boundBox.min.getComponent(i) - buf - 0.01];
 					minDist = dist;
 				}
 				dist = Math.abs(point.getComponent(i) - boundBox.max.getComponent(i));
 				if (dist < minDist) {
-					closePair = [i, boundBox.max.getComponent(i) + buf];
+					closePair = [i, boundBox.max.getComponent(i) + buf + 0.01];
 					minDist = dist;
 				}
 			}
@@ -280,27 +280,89 @@ var LabyrinthControls = function ( object, domElement, light ) {
 			return surfacePoint;
 		}
 
-		let didCollide = false;
+		// returns the point on the surface of the bounding box closest to point
+		function toSurfaceNotEdge(boundBox, point) {
+			let min = boundBox.max.getComponent(2) - boundBox.min.getComponent(2);
+			let minDim = 2;
+			for (let i = 0; i < 2; i++) {
+				let nmin = boundBox.max.getComponent(i) - boundBox.min.getComponent(i);
+				if (nmin < min) {
+					min = nmin;
+					minDim = i;
+				}
+			}
+			let minDist;
+			let closePair;
+			// only can test in minDim dimension
+			let i = minDim;
+			let dist = Math.abs(point.getComponent(i) - boundBox.min.getComponent(i));
+			if (dist < minDist || minDist == undefined) {
+				closePair = [i, boundBox.min.getComponent(i) - buf - 0.01];
+				minDist = dist;
+			}
+			dist = Math.abs(point.getComponent(i) - boundBox.max.getComponent(i));
+			if (dist < minDist) {
+				closePair = [i, boundBox.max.getComponent(i) + buf + 0.01];
+				minDist = dist;
+			}
+			let surfacePoint = point.clone();
+			surfacePoint.setComponent(closePair[0], closePair[1]);
+			return surfacePoint;
+		}
+
+		let didCollide = 0;
+		this.collideResultPosition = [];
 		for (const wall of maze.children) {
-			let prev = this.previous;
-			let pos = this.object.position;
+			//let prev = this.previous;
+			//let pos = this.object.position;
 			let box = wall.geometry.boundingBox;
 			let wallPos = wall.position;
 
-			if (pos.distanceTo(wallPos) > 6)
+			if (pos.distanceTo(wallPos) > 6) // arbitrary cuttoff
 				continue;
 
 			if (inWall(box, prev)) {
 				// move immediately to Surface
-				this.collideResultPosition = toSurface(box, prev);
-				return true; // didCollide
+				this.collideResultPosition = [toSurface(box, prev)];
+				console.log('moved immediately to surface');
+				return 1; // didCollide
 			}
 
 			if (inWall(box, pos)) {
-				this.collideResultPosition = toSurface(box, pos);
-				return true;
+				this.collideResultPosition.push(toSurfaceNotEdge(box, pos));
+				didCollide++;
 			}
 
+		}
+
+		if (didCollide > 1) {
+			//console.log('again!', didCollide);
+			let p1 = this.collideResultPosition[0].clone();
+			let p2 = this.collideResultPosition[1].clone();
+			let p3;
+			if (didCollide > 2)
+				p3 = this.collideResultPosition[2].clone();
+			let try1 = this.collisionCheck(prev, p1);
+			if (try1 < 1) {
+				this.collideResultPosition = [p1];
+				return 1;
+			}
+			//console.log('try2?');
+			let try2 = this.collisionCheck(prev, p2);
+			if (try2 < 1) {
+				this.collideResultPosition = [p2];
+				return 1;
+			}
+			if (didCollide > 2) {
+				//console.log('try3???');
+				let try3 = this.collisionCheck(prev, p3);
+				if (try3 < 1) {
+					this.collideResultPosition = [p3];
+					return 1;
+				}
+			}
+			//console.log('oh well');
+			return try1;
 		}
 
 		return didCollide;
@@ -367,8 +429,11 @@ let dbg = 0;
 			if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
 			if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
-			if (this.collisionCheck()) {
-				this.object.position.copy(this.collideResultPosition);
+			let collisions = this.collisionCheck(this.previous, this.object.position);
+			if (collisions > 0) {
+				this.object.position.copy(this.collideResultPosition[0]);
+			} else if (collisions > 1) {
+				this.object.position.copy(this.previous);
 			}
 
 			var actualLookSpeed = delta * this.lookSpeed;
@@ -409,7 +474,7 @@ let dbg = 0;
 			
 			this.light.target.position.copy(targetPosition);
 			this.light.position.copy(this.object.position);
-			this.box.position.copy(targetPosition);
+			//this.box.position.copy(targetPosition);
 
 		};
 
