@@ -154,11 +154,15 @@ function setUpPlayer() {
 	let y = Math.floor(Math.random() * dimensions) * scale;
 	let z = Math.floor(Math.random() * dimensions) * scale - scale/2;
 	camera.position.set(x, y, z);
-	camera.lookAt(new Vector3(x, y, z));
+	let halfDist = (dimensions / 2) * scale - scale/2;
+	camera.lookAt(new Vector3(halfDist, y, halfDist));
 
 	// Set up controls
 	spotLight.position.set(x, y, z);
-	spotLight.target.position.set(x, y, z);
+	spotLight.target.position.set(halfDist, y, halfDist);
+	controls.mouseX = 0;
+	controls.mouseY = 0;
+	controls.object.lookAt(new Vector3(halfDist, y, halfDist));
 }
 const spotLight = new SpotLight(0xffffff, 1);
 spotLight.angle = Math.PI * 0.4;
