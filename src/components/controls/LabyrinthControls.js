@@ -336,11 +336,7 @@ var LabyrinthControls = function ( object, domElement, light ) {
 		}
 
 		if (didCollide > 1) {
-			console.log('again!', didCollide);
-
-			//return 1;
-
-
+			//console.log('again!', didCollide);
 			let p1 = this.collideResultPosition[0].clone();
 			let p2 = this.collideResultPosition[1].clone();
 			let p3;
@@ -351,21 +347,21 @@ var LabyrinthControls = function ( object, domElement, light ) {
 				this.collideResultPosition = [p1];
 				return 1;
 			}
-			console.log('try2?');
+			//console.log('try2?');
 			let try2 = this.collisionCheck(prev, p2);
 			if (try2 < 1) {
 				this.collideResultPosition = [p2];
 				return 1;
 			}
 			if (didCollide > 2) {
-				console.log('try3???');
+				//console.log('try3???');
 				let try3 = this.collisionCheck(prev, p3);
 				if (try3 < 1) {
 					this.collideResultPosition = [p3];
 					return 1;
 				}
 			}
-			console.log('oh well');
+			//console.log('oh well');
 			return try1;
 		}
 
