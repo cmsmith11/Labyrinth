@@ -10,7 +10,7 @@ var instructionsHTML = "\
 <span id=pregame style='position: absolute; left: "+0+"px; top: "+0+"px; padding: 25px;\
 height: "+300+"px; width: "+500+"px; background: linear-gradient(to bottom right, #d9d9d9, #737373); border-radius: 5px; display: block; opacity: 0.85;'>\
 	<center><h1>LABYRINTH</h1></center>\
-	<p><strong>Instructions:</strong> You will be placed in a random location of a multi-level maze. Your objective is to reach the goal hidden in the maze (tap <strong>S</strong> a few times for a view of the goal).</p>\
+	<p><strong>Instructions:</strong> You will be placed in a random location of a multi-level maze. Your objective is to reach the goal hidden in the maze (tap <strong>S</strong> a few times for a view of the goal on this title screen).</p>\
 	<p>Use the <strong>Up</strong>, <strong>Down</strong>, <strong>Left</strong>, and <strong>Right</strong> arrow keys to orient yourself, and use <strong>WASD</strong> to move around. Use <strong>Space</strong> to go up, and <strong>Shift</strong> to go down (try them out now). At any point in the game, press <strong>ESC</strong> to pause. Good luck!</p>\
 	<span style='position: relative; top: "+(0*300/2-0)+"px;'>\
 		<center style='position: relative; top: "+0+"px;'>Enter Difficulty (1-5)</center>\
@@ -114,7 +114,7 @@ function handleResizeHTML() {
 
 function showPregamePrompt() {
 	document.getElementById("intro").innerHTML = instructionsHTML;
-	document.getElementById("lvlInpPre").focus();
+	//document.getElementById("lvlInpPre").focus();
 	document.getElementById("lvlInpPre").value = '';
 }
 
@@ -124,7 +124,7 @@ function hidePregamePrompt() {
 }
 
 function showPause() {
-	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' (tap <strong>S</strong> a few times for a view of the goal)', '');
+	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' (tap <strong>S</strong> a few times for a view of the goal on this title screen)', '');
 	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace('Press Enter to Start', 'Press Enter to Start or Q to Quit');
 	document.getElementById("intro").style.display = 'block';
 	document.getElementById("lvlInpPre").focus();
