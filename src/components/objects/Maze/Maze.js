@@ -125,9 +125,6 @@ class Maze extends Group {
         }
         //this.addFloor(0, gridSize, gridScale, true);
         //this.addFloor(1, gridSize, gridScale, false);
-
-        // charlie edit here... work in progress...
-        this.wallMap = undefined;
     }
 
     // Adds the inner and outer walls of the maze at a given level

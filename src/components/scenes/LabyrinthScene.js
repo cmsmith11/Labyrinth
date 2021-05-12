@@ -1,4 +1,4 @@
-import * as Dat from 'dat.gui';
+//import * as Dat from 'dat.gui';
 import { Scene, Color, Box3, Vector3, Box3Helper, BoxGeometry, MeshNormalMaterial, Mesh } from 'three';
 import { Maze, Trophy, EndGoal } from 'objects';
 import { BasicLights } from 'lights';

@@ -19,6 +19,19 @@ height: "+300+"px; width: "+500+"px; background: linear-gradient(to bottom right
 	</span>\
 </span>\
 ";
+var pausedHTML = "\
+<span id=pregame style='position: absolute; left: "+0+"px; top: "+0+"px; padding: 25px;\
+height: "+300+"px; width: "+500+"px; background: linear-gradient(to bottom right, #d9d9d9, #737373); border-radius: 5px; display: block; opacity: 0.85;'>\
+	<center><h1>LABYRINTH</h1></center>\
+	<p><strong>Instructions:</strong> You will be placed in a random location of a multi-level maze. Your objective is to reach the goal hidden in the maze.</p>\
+	<p>Use the <strong>Up</strong>, <strong>Down</strong>, <strong>Left</strong>, and <strong>Right</strong> arrow keys to orient yourself, and use <strong>WASD</strong> to move around. Use <strong>Space</strong> to go up, and <strong>Shift</strong> to go down (try them out now). At any point in the game, press <strong>ESC</strong> to pause. Good luck!</p>\
+	<span style='position: relative; top: "+(0*300/2-0)+"px;'>\
+		<center style='position: relative; top: "+0+"px;'>Restart? Enter Difficulty (1-5)</center>\
+		<center><input id=lvlInpPre value='' style='position: relative; top: "+10+"px;'></input><center>\
+		<center id=entertostart style='position: relative; top: "+20+"px;'>Press Enter to Start, ESC to Resume, or Q to Quit</center>\
+	</span>\
+</span>\
+";
 var startingHTML = "\
 <span id=start style='position: absolute; top: "+80+"px; left: "+55+"px; display: none; opacity: 1.0'>\
 	<center><h1 style='color: silver; font-size: 70px;'>START!</h1></center>\
@@ -29,7 +42,7 @@ var replayHTML = "\
 height: "+250+"px; width: "+400+"px; background: linear-gradient(to bottom right, #d9d9d9, #737373); border-radius: 5px; display: none; opacity: 0.85;'>\
 	<span style='position: relative; top: "+0+"px;'>\
 		<center style='position: relative; top: "+0+"px;'><h1 style='font-size: 40px;'>You won in <span id=finishtime></span>!</h1><p>Play again?</p></center>\
-		<center style='position: relative; top: "+0+"px;'>Enter Difficulty (0-5)</center>\
+		<center style='position: relative; top: "+0+"px;'>Enter Difficulty (1-5)</center>\
 		<center><input id=lvlInpEnd value='' style='position: relative; top: "+10+"px;'></input><center>\
 		<center id=etsReplay style='position: relative; top: "+20+"px;'><strong>Press Enter to Start</strong></center>\
 	</span>\
@@ -119,20 +132,21 @@ function showPregamePrompt() {
 }
 
 function hidePregamePrompt() {
-	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' or Q to Quit', '');
+	document.getElementById("intro").innerHTML = instructionsHTML; //document.getElementById("intro").innerHTML.replace(' or Q to Quit', '');
 	document.getElementById("intro").style.display = 'none';
 }
 
 function showPause() {
-	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' (tap <strong>S</strong> a few times for a view of the goal on this title screen)', '');
-	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace('Press Enter to Start', 'Press Enter to Start or Q to Quit');
+	// document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' (tap <strong>S</strong> a few times for a view of the goal on this title screen)', '');
+	// document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace('Press Enter to Start', 'Press Enter to Start or Q to Quit');
+	document.getElementById("intro").innerHTML = pausedHTML;
 	document.getElementById("intro").style.display = 'block';
 	document.getElementById("lvlInpPre").focus();
 	document.getElementById("lvlInpPre").value = '';
 }
 
 function hidePause() {
-	document.getElementById("intro").innerHTML = document.getElementById("intro").innerHTML.replace(' or Q to Quit', '');
+	document.getElementById("intro").innerHTML = instructionsHTML;//document.getElementById("intro").innerHTML.replace(' or Q to Quit', '');
 	document.getElementById("intro").style.display = 'none';
 }
 
@@ -273,6 +287,17 @@ function frontPad(num, l) {
 	return newNum;
 }
 
+function backPad(num, l) {
+	let newNum = '' + num;
+	let len = l - newNum.length;
+	if (len < l) {
+		for (let i = 0; i < len; i++) {
+			newNum = newNum + '0';
+		}
+	}
+	return newNum;
+}
+
 var startTime = undefined;
 function timeToString(time) {
 	// let minutes = time.substring(0, time.indexOf(':'));
@@ -285,7 +310,7 @@ function timeToString(time) {
 	let minutes = (Math.floor(totTime / 1000) - seconds) / 60;
 	//console.log('millis:', totTime / 1000 - Math.floor(totTime / 1000));
 	let milliseconds = '' + Math.floor((totTime / 1000 - Math.floor(totTime / 1000)) * 1000);
-	return minutes + ':' + frontPad(seconds, 2) + '.' + milliseconds.substring(0, 4);
+	return minutes + ':' + frontPad(seconds, 2) + '.' + backPad(milliseconds.substring(0, 4), 3);
 }
 
 var renderedTitle = false;
@@ -329,6 +354,7 @@ function animateHTML(timeStamp, gameState, dist) {
 		let opac = 0.4 * Math.sin(timeStamp / 500) + 0.6;
 		document.getElementById('etsReplay').style.opacity = opac;
 		document.getElementById('finishtime').innerHTML = document.getElementById('time').innerHTML;
+		document.getElementById('dist').innerHTML = '0.000';
 	}
 }
 
