@@ -34,8 +34,8 @@ var LabyrinthControls = function ( object, domElement, light ) {
 
 	this.enabled = true;
 
-	this.movementSpeed = 1.0;
-	this.lookSpeed = 0.005;
+	this.movementSpeed = 5.0;//1.0;
+	this.lookSpeed = 0.4;//0.005;
 
 	this.lookVertical = true;
 	this.autoForward = false;
