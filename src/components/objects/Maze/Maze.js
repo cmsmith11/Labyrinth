@@ -2,9 +2,11 @@
  * @author jrknott
  */
 
-import { Group, BoxGeometry, Vector3, Mesh, Color,
-         MeshPhongMaterial, TextureLoader, ColorKeyframeTrack} from 'three';
+import { Group, BoxGeometry, Vector3, Mesh, 
+         MeshPhongMaterial, TextureLoader, Box3} from 'three';
 import water from './waterTexture.png';
+import gloop from './texture.png';
+import glow from './lightTexture.png';
 
 class Maze extends Group {
     constructor(parent, dimensions, scale) {
@@ -16,6 +18,10 @@ class Maze extends Group {
         };
         this.name = 'maze';
         this.maxDist = Math.sqrt(2*(dimensions*scale)*(dimensions*scale));
+        const textureLoader = new TextureLoader();
+        this.waterTexture = textureLoader.load(water);
+        this.gloopTexture = textureLoader.load(gloop);
+        this.glowTexture = textureLoader.load(glow);
         // build the maze
         this.buildRandomMaze(dimensions, scale);
         // Add self to parent's update list
@@ -225,14 +231,13 @@ class Maze extends Group {
     // }
 
     // creates a material to be used in walls, based on a texture
-    createWallMaterial() {
-        const textureLoader = new TextureLoader();
-        const texture = textureLoader.load(water);
-        const material = new MeshPhongMaterial({color: 'purple', emissive: 'black', reflectivity: 0.9});
-        material.map = texture;
-        material.displacementMap = texture;
+    createWallMaterial(isVertical) {
+        const material = new MeshPhongMaterial({color: 'purple', emissive: 'white', specular: 0x111111, shininess: 30, reflectivity: 1, flatShading: true});
+        
+        material.map = this.waterTexture;
+        material.displacementMap = this.gloopTexture;
+        material.emissiveMap = this.glowTexture;
         material.displacementScale = 0.1;
-        material.shininess = 30;//1000;
         return material;
     }
 
@@ -240,20 +245,23 @@ class Maze extends Group {
     addWall(pos, normal, gridScale){
         let wallGeo = undefined;
         const wallDepth = gridScale / 10;
+        const segments = 100;
+        let box = new Box3();
         if (normal.x == 1) {
-            wallGeo = new BoxGeometry(wallDepth, gridScale + wallDepth, gridScale + wallDepth);
+            wallGeo = new BoxGeometry(wallDepth, gridScale + wallDepth, gridScale + wallDepth, segments / 10, segments, segments);
+            box.setFromCenterAndSize(pos, new Vector3(wallDepth, gridScale + wallDepth, gridScale + wallDepth));
         } else if (normal.y == 1) {
-            wallGeo = new BoxGeometry(gridScale + wallDepth, wallDepth, gridScale + wallDepth);
+            wallGeo = new BoxGeometry(gridScale + wallDepth, wallDepth, gridScale + wallDepth, segments, segments / 10, segments);
+            box.setFromCenterAndSize(pos, new Vector3(gridScale + wallDepth, wallDepth, gridScale + wallDepth));
         } else if (normal.z == 1) {
-            wallGeo = new BoxGeometry(gridScale + wallDepth, gridScale + wallDepth, wallDepth);
+            wallGeo = new BoxGeometry(gridScale + wallDepth, gridScale + wallDepth, wallDepth, segments, segments, segments / 10);
+            box.setFromCenterAndSize(pos, new Vector3(gridScale + wallDepth, gridScale + wallDepth, wallDepth));
         }
         const material = this.createWallMaterial();
 
         const wall = new Mesh(wallGeo, material);
         wall.position.add(pos);
-        wall.geometry.computeBoundingBox();
-        wall.geometry.boundingBox.min.add(pos);
-        wall.geometry.boundingBox.max.add(pos);
+        wall.geometry.boundingBox = box;
         this.add(wall); 
     }
 
@@ -280,14 +288,16 @@ class Maze extends Group {
         for (let i = 0; i < walls.length; i++) {
             let f = distance / this.maxDist;
             let wall = walls[i];
-            let color = new Color('purple');
-            let origlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
-            color.b += (Math.sin(timeStamp / (500*f)) + 1) / 5;
-            let newlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
-            color.r *= origlen / newlen;
-            color.g *= origlen / newlen;
-            color.b *= origlen / newlen;
-            wall.material.color = color;
+            let spec = (Math.sin(timeStamp / 500) + 1) / 10;
+            wall.material.emissiveIntensity = spec;
+            //let origlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
+            //color.b += (Math.sin(timeStamp / (500*f)) + 1) / 5;
+            //let newlen = Math.sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
+            //color.r *= origlen / newlen;
+            //color.g *= origlen / newlen;
+            //color.b *= origlen / newlen;
+            //wall.material.color = color;
+            //wall.material.displacementScale = (Math.sin(timeStamp / 500) + 1) / 2 / 5;
         }
     }
 }
