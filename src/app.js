@@ -11,7 +11,7 @@ import { LabyrinthControls } from 'controls';
 import { Clock } from 'three';
 import { LabyrinthScene } from 'scenes';
 import { BasicLights } from 'lights';
-import { getChildNamed, pregamePromptHTML, endgamePromptHTML, handleResizeHTML, showPregamePrompt, hidePregamePrompt, showEndgamePrompt, hideEndgamePrompt, setUpPlayer, beginPlaying, playAgain, resetScene, animateHTML } from './introOutro.js';
+import { getChildNamed, pregamePromptHTML, endgamePromptHTML, startHTML, timeAndDistHTML, handleResizeHTML, showPregamePrompt, hidePregamePrompt, showPause, hidePause, showEndgamePrompt, hideEndgamePrompt, toTitleScreen, setUpPlayer, beginPlaying, playAgain, resetScene, animateHTML } from './introOutro.js';
 
 const scale = 5;
 var dimensions = 0;
@@ -42,9 +42,11 @@ var dimensions = 0;
 // set up intro and outro HTML
 pregamePromptHTML();
 endgamePromptHTML();
-showPregamePrompt();
-// possible game states = { 'intro', 'playing', 'outro', 'paused' };
-var gameState = 'intro';
+startHTML();
+timeAndDistHTML();
+//showPregamePrompt();
+// possible game states = { 'title', 'intro', 'playing', 'outro', 'paused' };
+var gameState = 'title';
 
 console.log("The Maze will have dimension " + dimensions + "!");
 
@@ -83,11 +85,12 @@ const onAnimationFrameHandler = (timeStamp) => {
     scene.update && scene.update(timeStamp, pos);
 
     //console.log(scene.destinationLoc.distanceTo(pos));
-    if (scene.destinationLoc.distanceTo(pos) != 0 && scene.destinationLoc.distanceTo(pos) < 2 && gameState != 'intro') {
+    let dist = scene.destinationLoc.distanceTo(pos);
+    if (dist != 0 && dist < 2 && gameState == 'playing') {
     	showEndgamePrompt();
     	gameState = 'outro';
     }
-    animateHTML(timeStamp);
+    animateHTML(timeStamp, gameState, dist);
 
 	window.requestAnimationFrame(onAnimationFrameHandler);
 };
@@ -107,7 +110,10 @@ const windowResizeHandler = () => {
 const keydownHandler = (event) => {
 	let k = event.key;
 	if (k == 'Enter') {
-		if (gameState == 'intro' || gameState == 'paused') {
+		if (gameState == 'title') {
+			showPregamePrompt();
+			gameState = 'intro'
+		} else if (gameState == 'intro' || gameState == 'paused') {
 			if (beginPlaying(scene, controls))
 				gameState = 'playing';
 		} else if (gameState == 'outro') {
@@ -116,12 +122,19 @@ const keydownHandler = (event) => {
 		}
 	}
 	if (k == 'Escape') {
+		console.log('gamestate', gameState);
 		if (gameState == 'paused') {
-			hidePregamePrompt();
-			gameState == 'playing';
+			hidePause();
+			gameState = 'playing';
 		} else if (gameState == 'playing') {
-			showPregamePrompt();
+			showPause();
 			gameState = 'paused';
+		}
+	}
+	if (k == 'q') {
+		if (gameState != 'title') {
+			toTitleScreen(scene, controls);
+			gameState = 'title';
 		}
 	}
 };
